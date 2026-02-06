@@ -1,0 +1,26 @@
+[project]
+name = "preference-assignment-optimizer"
+version = "0.1.0"
+description = "Student-project assignment optimizer using Binary Integer Programming"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Pini Koplovitch", email = "pini.koplovitch@gmail.com" }
+]
+license = { text = "MIT" }
+keywords = ["optimization", "assignment", "preferences", "binary-integer-programming"]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/pinikop/preference-assignment-optimizer"
+
+[tool.uv]
+dev-dependencies = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = []
