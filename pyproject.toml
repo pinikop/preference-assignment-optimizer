@@ -10,14 +10,17 @@ authors = [
 license = { text = "MIT" }
 keywords = ["optimization", "assignment", "preferences", "binary-integer-programming"]
 dependencies = [
-    "pandas>=3.0.0",
+    "pandas>=2.0.0,<3",
+    "plotly>=6.5.2",
     "pulp>=3.3.0",
     "pytest>=9.0.2",
+    "streamlit>=1.40.0",
     "typer>=0.21.1",
 ]
 
 [project.scripts]
 preference-optimizer = "src.main:app"
+preference-optimizer-app = "src.app_cli:main"
 
 [project.urls]
 Repository = "https://github.com/pinikop/preference-assignment-optimizer"
@@ -30,7 +33,9 @@ build-backend = "hatchling.build"
 packages = ["src"]
 
 [tool.uv]
-dev-dependencies = []
+dev-dependencies = [
+    "ruff>=0.15.0",
+]
 
 [tool.ruff]
 line-length = 100
