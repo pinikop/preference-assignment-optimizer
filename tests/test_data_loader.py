@@ -42,3 +42,8 @@ class TestRankingToScore:
 
     def test_fifth_choice_is_1(self):
         assert rank_to_score(5) == 1
+
+    def test_custom_max_rank(self):
+        assert rank_to_score(1, max_rank=3) == 3
+        assert rank_to_score(2, max_rank=3) == 2
+        assert rank_to_score(3, max_rank=3) == 1
