@@ -9,7 +9,10 @@ authors = [
 ]
 license = { text = "MIT" }
 keywords = ["optimization", "assignment", "preferences", "binary-integer-programming"]
-dependencies = []
+dependencies = [
+    "pandas>=3.0.0",
+    "pytest>=9.0.2",
+]
 
 [project.urls]
 Repository = "https://github.com/pinikop/preference-assignment-optimizer"
