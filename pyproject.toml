@@ -20,7 +20,7 @@ dependencies = [
 
 [project.scripts]
 preference-optimizer = "src.main:app"
-preference-optimizer-app = "src.app_cli:main"
+preference-optimizer-app = "src.app.cli:main"
 
 [project.urls]
 Repository = "https://github.com/pinikop/preference-assignment-optimizer"
