@@ -221,9 +221,9 @@ def solve_assignment(
     participants: list[str],
     options: list[str],
     preferences: dict[str, list[tuple[str, int]]],
-    min_quota: int = 2,
-    max_quota: int = 3,
-    option_weight: float = 1.0,
+    min_quota: int,
+    max_quota: int,
+    option_weight: float,
 ) -> SolverResult:
     """
     Solve the preference assignment problem using integer programming.
@@ -233,9 +233,9 @@ def solve_assignment(
         options: List of option IDs
         preferences: Dictionary mapping participants to their option preferences with scores
                      e.g., {'Participant1': [('OptionA', 5), ('OptionB', 4), ...]}
-        min_quota: Minimum participants per active option (default 2)
-        max_quota: Maximum participants per option (default 3)
-        option_weight: Weight for the option utilization objective (default 1.0)
+        min_quota: Minimum participants per active option
+        max_quota: Maximum participants per option
+        option_weight: Weight for the option utilization objective.
                        Higher values prioritize using more options
 
     Option constraints:
