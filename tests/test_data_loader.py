@@ -112,3 +112,48 @@ student_002,Project_B,Project_A,,,
         _, projects, _ = load_preferences_from_csv(str(csv_with_missing))
         assert "" not in projects
         assert None not in projects
+
+
+class TestDuplicateOptions:
+    def test_duplicate_option_raises_error(self, tmp_path: Path):
+        """Duplicate options for same participant should raise ValueError."""
+        csv_content = """student_id,choice_1,choice_2,choice_3
+student_001,A,A,B
+"""
+        csv_path = tmp_path / "duplicate.csv"
+        csv_path.write_text(csv_content)
+
+        with pytest.raises(ValueError, match="Duplicate option 'A' for participant"):
+            load_preferences_from_csv(csv_path)
+
+
+class TestCSVValidation:
+    def test_empty_csv_raises_error(self, tmp_path: Path):
+        """Empty CSV should raise ValueError."""
+        csv_path = tmp_path / "empty.csv"
+        csv_path.write_text("")
+
+        with pytest.raises(ValueError, match="empty"):
+            load_preferences_from_csv(csv_path)
+
+    def test_headers_only_raises_error(self, tmp_path: Path):
+        """CSV with only headers should raise ValueError."""
+        csv_content = """student_id,choice_1,choice_2,choice_3
+"""
+        csv_path = tmp_path / "headers_only.csv"
+        csv_path.write_text(csv_content)
+
+        with pytest.raises(ValueError, match="no data rows"):
+            load_preferences_from_csv(csv_path)
+
+    def test_dynamic_number_of_choices(self, tmp_path: Path):
+        """Should handle CSVs with varying number of choice columns."""
+        csv_content = """student_id,choice_1,choice_2,choice_3
+student_001,A,B,C
+"""
+        csv_path = tmp_path / "three_choices.csv"
+        csv_path.write_text(csv_content)
+
+        students, options, preferences = load_preferences_from_csv(csv_path)
+        # With 3 choices: 1st=3, 2nd=2, 3rd=1
+        assert preferences["student_001"] == [("A", 3), ("B", 2), ("C", 1)]
