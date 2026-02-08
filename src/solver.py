@@ -3,6 +3,12 @@
 from collections import defaultdict
 
 from pulp import LpMaximize, LpProblem, LpVariable, lpSum, value
+from pulp.constants import (
+    LpStatusInfeasible,
+    LpStatusNotSolved,
+    LpStatusOptimal,
+    LpStatusUnbounded,
+)
 
 from src.types import (
     AssignmentStatus,
@@ -281,10 +287,10 @@ def solve_assignment(
 
     # Map PuLP status codes to SolverStatus
     status_map = {
-        1: SolverStatus.OPTIMAL,
-        -1: SolverStatus.INFEASIBLE,
-        -2: SolverStatus.UNBOUNDED,
-        0: SolverStatus.NOT_SOLVED,
+        LpStatusOptimal: SolverStatus.OPTIMAL,
+        LpStatusInfeasible: SolverStatus.INFEASIBLE,
+        LpStatusUnbounded: SolverStatus.UNBOUNDED,
+        LpStatusNotSolved: SolverStatus.NOT_SOLVED,
     }
     solver_status = status_map.get(status_code, SolverStatus.NOT_SOLVED)
 
