@@ -73,6 +73,7 @@ def main(
     if seed is not None or shuffle:
         if seed is not None:
             random.seed(seed)
+        participants = participants.copy()
         random.shuffle(participants)
 
     result = solve_assignment(
