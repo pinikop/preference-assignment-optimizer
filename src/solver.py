@@ -84,8 +84,7 @@ def _add_constraints(
                 lpSum(x[participant, option] for option, _ in participant_prefs) == 1
             )
 
-    # Constraints for option usage and size
-    # Simplified: if y=0 then count=0, if y=1 then count in {2,3}
+    # Big-M formulation: if y[option]=0 (inactive), count=0; if y[option]=1, count in [min_quota, max_quota]
     for option in options:
         participants_with_option = option_to_participants.get(option, set())
 
