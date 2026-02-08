@@ -13,7 +13,7 @@ from src.types import (
     SolverStatus,
 )
 
-# Threshold for considering a binary variable as "1"
+# Values above threshold are treated as 1, otherwise 0 (handles floating-point precision)
 BINARY_THRESHOLD = 0.5
 
 
