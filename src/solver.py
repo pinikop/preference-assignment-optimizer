@@ -181,26 +181,15 @@ def _calculate_metrics(
     }
     active_options = sum(1 for count in option_counts.values() if count > 0)
 
-    # Calculate preference distribution
-    preference_distribution: dict[int | str, int] = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        "unassigned": 0,
-        "no_preferences": 0,
-    }
+    # Calculate preference distribution (dynamic, supports any number of choices)
+    preference_distribution: dict[int | str, int] = defaultdict(int)
 
     for assignment in participant_assignments.values():
         if assignment.status == AssignmentStatus.UNASSIGNED:
             preference_distribution["unassigned"] += 1
         elif assignment.status == AssignmentStatus.NO_PREFERENCES:
             preference_distribution["no_preferences"] += 1
-        elif (
-            assignment.preference_rank is not None
-            and 1 <= assignment.preference_rank <= 5
-        ):
+        elif assignment.preference_rank is not None:
             preference_distribution[assignment.preference_rank] += 1
 
     # Find unused options
