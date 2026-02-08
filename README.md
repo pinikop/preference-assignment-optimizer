@@ -1,14 +1,15 @@
 # Preference Assignment Optimizer
 
-A student-project assignment optimization tool using Binary Integer Programming (BIP). This tool assigns students to projects based on their ranked preferences while optimizing overall satisfaction.
+A participant-to-option assignment optimization tool using Binary Integer Programming (BIP). This tool assigns participants to options based on their ranked preferences while maximizing overall satisfaction.
 
 ## Features
 
-- Load student preferences from CSV files
+- Load participant preferences from CSV files
 - Optimize assignments using BIP to maximize overall preference satisfaction
-- Handle multiple students and projects efficiently
-- Score-based preference system (5 points for 1st choice, 4 for 2nd, etc.)
+- Handle multiple participants and options efficiently
+- Dynamic score-based preference system (N points for 1st choice, N-1 for 2nd, etc., where N is the number of choice columns)
 - Configurable quotas (min/max participants per option)
+- Interactive web app (Streamlit) for exploring data and running the optimizer
 - Export results to CSV
 
 ## Installation
@@ -29,6 +30,10 @@ uv sync
 ### Web App (Streamlit)
 
 ```bash
+# Using the dedicated entry point
+uv run preference-optimizer-app
+
+# Or directly with streamlit
 uv run streamlit run src/app/streamlit.py
 ```
 
@@ -68,11 +73,16 @@ uv run preference-optimizer --help
 
 ### Input CSV Format
 
+The first column is the participant ID, and subsequent columns are their ranked choices (any number of choice columns is supported):
+
 ```csv
 participant_id,choice_1,choice_2,choice_3,choice_4,choice_5
 student_001,Project_01,Project_02,Project_03,Project_04,Project_05
 student_002,Project_03,Project_01,Project_05,Project_02,Project_04
 ```
+
+- Missing values (empty cells) are allowed and will be skipped
+- Duplicate options for the same participant will raise an error
 
 ## How the Solver Works
 
@@ -91,7 +101,7 @@ The solver maximizes:
 Σ (x[i,j] × preference_score[i,j]) + option_weight × Σ y[j]
 ```
 
-Where `preference_score` is 5 for 1st choice, 4 for 2nd choice, down to 1 for 5th choice.
+Where `preference_score` is N for 1st choice, N-1 for 2nd choice, down to 1 for Nth choice (N = number of choice columns in the CSV).
 
 ### Constraints
 
