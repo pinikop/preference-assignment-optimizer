@@ -1,6 +1,7 @@
 """Output formatting and export for solver results."""
 
 import csv
+from pathlib import Path
 
 from src.types import SolverResult
 
@@ -32,18 +33,21 @@ def print_assignment_summary(result: SolverResult) -> None:
             print(f"{option}: {', '.join(participants)}")
 
 
-def export_results_to_csv(result: SolverResult, filepath: str) -> None:
+def export_results_to_csv(result: SolverResult, filepath: Path | str) -> None:
     """Export participant assignments to CSV."""
-    with open(filepath, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(
-            ["participant_id", "assigned_option", "preference_rank", "preference_score", "status"]
-        )
-        for participant, assignment in sorted(result.participant_assignments.items()):
-            writer.writerow([
-                participant,
-                assignment.option,
-                assignment.preference_rank or "",
-                assignment.preference_score,
-                assignment.status.value,
-            ])
+    try:
+        with open(filepath, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                ["participant_id", "assigned_option", "preference_rank", "preference_score", "status"]
+            )
+            for participant, assignment in sorted(result.participant_assignments.items()):
+                writer.writerow([
+                    participant,
+                    assignment.option,
+                    assignment.preference_rank or "",
+                    assignment.preference_score,
+                    assignment.status.value,
+                ])
+    except OSError as e:
+        raise OSError(f"Failed to write results to '{filepath}': {e}") from e
