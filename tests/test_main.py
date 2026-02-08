@@ -4,6 +4,7 @@ import csv
 import tempfile
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from src.main import app
@@ -207,3 +208,16 @@ class TestOutput:
             assert rows[0]["preference_rank"] == "1"
             assert rows[0]["preference_score"] == "5"
             assert rows[0]["status"] == "ASSIGNED"
+
+    def test_export_to_invalid_path_raises_error(self):
+        """Exporting to invalid path should raise OSError."""
+        result = SolverResult(
+            status=SolverStatus.OPTIMAL,
+            assignments={},
+            option_counts={},
+            participant_assignments={},
+            metrics=None,
+        )
+
+        with pytest.raises(OSError, match="Failed to write"):
+            export_results_to_csv(result, "/nonexistent/directory/file.csv")
