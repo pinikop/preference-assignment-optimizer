@@ -301,3 +301,117 @@ class TestSolverWithMockData:
             if a.status == AssignmentStatus.UNASSIGNED
         ]
         assert unassigned == [], f"Unassigned participants: {unassigned}"
+
+
+class TestEdgeCases:
+    """Tests for edge cases and unusual inputs."""
+
+    def test_option_with_no_demand(self):
+        """Options not in any preference list should have 0 assignments."""
+        participants = ["p1", "p2"]
+        options = ["o1", "o2", "unused_option"]
+        preferences = {
+            "p1": [("o1", 5)],
+            "p2": [("o1", 4)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
+        assert result.option_counts.get("unused_option", 0) == 0
+
+    def test_infeasible_scenario(self):
+        """Too few participants for min_quota should be infeasible."""
+        participants = ["p1", "p2"]
+        options = ["o1"]
+        preferences = {
+            "p1": [("o1", 5)],
+            "p2": [("o1", 4)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=5, max_quota=10, option_weight=1.0
+        )
+        assert result.status == SolverStatus.INFEASIBLE
+
+    def test_empty_participants(self):
+        """Empty participant list should return optimal with no assignments."""
+        result = solve_assignment(
+            participants=[],
+            options=["o1", "o2"],
+            preferences={},
+            min_quota=2, max_quota=3, option_weight=1.0
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert all(count == 0 for count in result.option_counts.values())
+
+    def test_all_participants_no_preferences(self):
+        """All participants with no preferences get NO_PREFERENCES status."""
+        participants = ["p1", "p2", "p3"]
+        options = ["o1", "o2"]
+        preferences = {}  # No one has preferences
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        for p in participants:
+            assert result.participant_assignments[p].status == AssignmentStatus.NO_PREFERENCES
+
+
+class TestMetricsValidation:
+    """Tests to verify metrics calculations are correct."""
+
+    def test_preference_satisfaction_equals_sum_of_scores(self):
+        """preference_satisfaction should equal sum of assigned preference scores."""
+        participants = ["p1", "p2", "p3", "p4"]
+        options = ["o1", "o2"]
+        preferences = {
+            "p1": [("o1", 5), ("o2", 4)],
+            "p2": [("o1", 5), ("o2", 4)],
+            "p3": [("o2", 5), ("o1", 4)],
+            "p4": [("o2", 5), ("o1", 4)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
+        assert result.metrics is not None
+
+        # Calculate expected sum from individual assignments
+        expected_sum = sum(
+            a.preference_score for a in result.participant_assignments.values()
+        )
+        assert result.metrics.preference_satisfaction == expected_sum
+
+    def test_active_options_count_matches_assignments(self):
+        """active_options should match count of options with participants."""
+        participants = ["p1", "p2", "p3", "p4"]
+        options = ["o1", "o2", "o3"]
+        preferences = {
+            "p1": [("o1", 5)],
+            "p2": [("o1", 4)],
+            "p3": [("o2", 5)],
+            "p4": [("o2", 4)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
+        assert result.metrics is not None
+
+        expected_active = sum(1 for count in result.option_counts.values() if count > 0)
+        assert result.metrics.active_options == expected_active
+
+    def test_average_satisfaction_calculation(self):
+        """average_satisfaction should be preference_satisfaction / num_participants."""
+        participants = ["p1", "p2", "p3", "p4"]
+        options = ["o1", "o2"]
+        preferences = {
+            "p1": [("o1", 5), ("o2", 4)],
+            "p2": [("o1", 5), ("o2", 4)],
+            "p3": [("o2", 5), ("o1", 4)],
+            "p4": [("o2", 5), ("o1", 4)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
+        assert result.metrics is not None
+
+        expected_avg = result.metrics.preference_satisfaction / len(participants)
+        assert result.metrics.average_satisfaction == expected_avg
