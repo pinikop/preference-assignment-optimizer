@@ -253,9 +253,10 @@ def solve_assignment(
     Option constraints:
         - Each option must have either 0 participants OR between min_quota and max_quota
 
-    Objectives (in order of priority):
-        1. Maximize participant preference satisfaction
-        2. Maximize the number of options used
+    Objective:
+        Maximize weighted sum of preference satisfaction (weight=1.0) and
+        number of options used (weight=option_weight). Higher option_weight
+        favors more active options; lower values favor pure preference satisfaction.
 
     Returns:
         SolverResult with assignment results and metrics
