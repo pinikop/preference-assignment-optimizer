@@ -84,6 +84,40 @@ student_002,Project_03,Project_01,Project_05,Project_02,Project_04
 - Missing values (empty cells) are allowed and will be skipped
 - Duplicate options for the same participant will raise an error
 
+## Programmatic Usage
+
+The solver can be used directly in Python code:
+
+```python
+from src.solver import PreferenceAssignmentSolver, solve_assignment
+
+# Option 1: Class-based (recommended for advanced use)
+solver = PreferenceAssignmentSolver(
+    participants=["Alice", "Bob", "Charlie"],
+    options=["Project_A", "Project_B"],
+    preferences={
+        "Alice": [("Project_A", 2), ("Project_B", 1)],
+        "Bob": [("Project_B", 2), ("Project_A", 1)],
+        "Charlie": [("Project_A", 2), ("Project_B", 1)],
+    },
+    min_quota=1,
+    max_quota=2,
+    option_weight=0.5,
+)
+result = solver.solve()
+
+# Option 2: Function-based (backward-compatible)
+result = solve_assignment(
+    participants, options, preferences,
+    min_quota=2, max_quota=3, option_weight=1.0
+)
+
+# Access results
+print(result.status)                    # SolverStatus.OPTIMAL
+print(result.assignments)               # {'Project_A': ['Alice'], 'Project_B': ['Bob', 'Charlie']}
+print(result.metrics.active_options)    # 2
+```
+
 ## How the Solver Works
 
 The optimizer uses **Binary Integer Programming (BIP)** via PuLP to find optimal assignments.
