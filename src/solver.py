@@ -132,10 +132,13 @@ class PreferenceAssignmentSolver:
         for participant in self.participants:
             participant_prefs = self.preferences.get(participant, [])
             if participant_prefs:
-                self._model += (
-                    lpSum(self._x[participant, option] for option, _ in participant_prefs)
+                constraint = (
+                    lpSum(
+                        self._x[participant, option] for option, _ in participant_prefs
+                    )
                     == 1
                 )
+                self._model += constraint  # type: ignore[assignment]
 
         # Big-M formulation: if y[option]=0 (inactive), count=0; if y[option]=1, count in [min_quota, max_quota]
         for option in self.options:
@@ -185,7 +188,12 @@ class PreferenceAssignmentSolver:
                     if (participant, option) in self._x
                     else 0.0
                 )
-                if var_value is not None and round(var_value) == 1:
+                # value() returns either float or None
+                if (
+                    var_value is not None
+                    and isinstance(var_value, (int, float))
+                    and round(var_value) == 1
+                ):
                     option_assignments[option].append(participant)
                     rank = _find_preference_rank(participant_prefs, option)
 
@@ -316,8 +324,7 @@ class PreferenceAssignmentSolver:
 
             # Calculate option counts
             option_counts = {
-                option: len(assigned)
-                for option, assigned in option_assignments.items()
+                option: len(assigned) for option, assigned in option_assignments.items()
             }
 
             # Calculate metrics
