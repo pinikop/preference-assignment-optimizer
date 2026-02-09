@@ -1,6 +1,7 @@
 """Streamlit app for the Preference Assignment Optimizer."""
 
 import tempfile
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -64,6 +65,9 @@ def main():
         except Exception as e:
             st.error(f"Error loading CSV: {e}")
             st.session_state.data_loaded = False
+        finally:
+            # Clean up temp file
+            Path(tmp_path).unlink(missing_ok=True)
 
     if not st.session_state.data_loaded:
         st.info("Upload a CSV file to get started.")
