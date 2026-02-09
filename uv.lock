@@ -530,13 +530,13 @@ dependencies = [
     { name = "pandas" },
     { name = "plotly" },
     { name = "pulp" },
-    { name = "pytest" },
     { name = "streamlit" },
     { name = "typer" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "pytest" },
     { name = "ruff" },
 ]
 
@@ -545,13 +545,15 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.0.0,<3" },
     { name = "plotly", specifier = ">=6.5.2" },
     { name = "pulp", specifier = ">=3.3.0" },
-    { name = "pytest", specifier = ">=9.0.2" },
     { name = "streamlit", specifier = ">=1.40.0" },
     { name = "typer", specifier = ">=0.21.1" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.15.0" }]
+dev = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "ruff", specifier = ">=0.15.0" },
+]
 
 [[package]]
 name = "protobuf"
