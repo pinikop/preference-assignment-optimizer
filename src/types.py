@@ -2,10 +2,6 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pulp import LpProblem, LpVariable
 
 
 class SolverStatus(Enum):
@@ -59,10 +55,3 @@ class SolverResult:
     metrics: Metrics | None = None
 
 
-@dataclass
-class ModelComponents:
-    """Components of the ILP model returned by _build_model."""
-
-    model: "LpProblem"
-    x: dict[tuple[str, str], "LpVariable"]  # participant-option assignment variables
-    y: dict[str, "LpVariable"]  # option usage variables
