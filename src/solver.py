@@ -18,9 +18,6 @@ from src.types import (
     SolverStatus,
 )
 
-# Values above threshold are treated as 1, otherwise 0 (handles floating-point precision)
-BINARY_THRESHOLD = 0.5
-
 
 def _find_preference_rank(prefs: list[tuple[str, int]], option: str) -> int | None:
     """Find the 1-based rank of an option in a participant's preference list."""
@@ -188,11 +185,7 @@ class PreferenceAssignmentSolver:
                     if (participant, option) in self._x
                     else 0.0
                 )
-                if (
-                    var_value is not None
-                    and isinstance(var_value, (int, float))
-                    and var_value > BINARY_THRESHOLD
-                ):
+                if var_value is not None and round(var_value) == 1:
                     option_assignments[option].append(participant)
                     rank = _find_preference_rank(participant_prefs, option)
 
