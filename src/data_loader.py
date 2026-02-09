@@ -5,12 +5,12 @@ from pathlib import Path
 import pandas as pd
 
 
-def rank_to_score(rank: int, max_rank: int = 5) -> int:
+def rank_to_score(rank: int, max_rank: int) -> int:
     """Convert a preference ranking to a score.
 
     Args:
         rank: 1 for first choice, 2 for second, etc.
-        max_rank (optional): The maximum rank value (e.g., 5 for five choices). Defaults to 5.
+        max_rank: The maximum rank value (e.g., 5 for five choices).
     Returns:
         Score where higher is better (5 for rank 1, 4 for rank 2, etc.)
     """

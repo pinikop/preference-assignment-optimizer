@@ -35,13 +35,13 @@ class TestMockDataFile:
 
 class TestRankingToScore:
     def test_first_choice_is_5(self):
-        assert rank_to_score(1) == 5
+        assert rank_to_score(1, 5) == 5
 
     def test_second_choice_is_4(self):
-        assert rank_to_score(2) == 4
+        assert rank_to_score(2, 5) == 4
 
     def test_fifth_choice_is_1(self):
-        assert rank_to_score(5) == 1
+        assert rank_to_score(5, 5) == 1
 
     def test_custom_max_rank(self):
         assert rank_to_score(1, max_rank=3) == 3
