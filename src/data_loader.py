@@ -34,7 +34,8 @@ def load_preferences_from_csv(
           where score is len(choices) for 1st choice, len(choices)-1 for 2nd, etc.
 
     Raises:
-        ValueError: If CSV is empty, malformed, or contains duplicate options for a participant.
+        ValueError: If CSV is empty, malformed, contains duplicate participant IDs,
+            or contains duplicate options for a participant.
     """
     if isinstance(filepath, str):
         filepath = Path(filepath)
@@ -48,6 +49,10 @@ def load_preferences_from_csv(
 
     if df.empty:
         raise ValueError(f"CSV file contains no data rows: {filepath}")
+
+    if not df.index.is_unique:
+        duplicates = df.index[df.index.duplicated()].unique().tolist()
+        raise ValueError(f"Duplicate participant IDs: {duplicates}")
 
     participants = df.index.tolist()
     options = sorted({val for val in df.values.flatten() if pd.notna(val)})

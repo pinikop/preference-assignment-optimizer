@@ -127,6 +127,20 @@ student_001,A,A,B
             load_preferences_from_csv(csv_path)
 
 
+class TestDuplicateParticipants:
+    def test_duplicate_participant_id_raises_error(self, tmp_path: Path):
+        """Duplicate participant IDs should raise ValueError, not silently corrupt results."""
+        csv_content = """student_id,choice_1,choice_2,choice_3
+student_001,A,B,C
+student_001,B,C,A
+"""
+        csv_path = tmp_path / "duplicate_participants.csv"
+        csv_path.write_text(csv_content)
+
+        with pytest.raises(ValueError, match="Duplicate participant"):
+            load_preferences_from_csv(csv_path)
+
+
 class TestCSVValidation:
     def test_empty_csv_raises_error(self, tmp_path: Path):
         """Empty CSV should raise ValueError."""
