@@ -261,6 +261,54 @@ class TestSolveAssignment:
                 assert 1 <= assignment.preference_rank <= 5
 
 
+class TestObjectiveValue:
+    """Tests that objective_value matches the documented objective formula."""
+
+    def test_objective_identity_with_unranked_options(self):
+        """objective_value == satisfaction + option_weight * active_options,
+        even when some options are ranked by nobody."""
+        participants = ["p1", "p2"]
+        # o2, o3, o4 are ranked by nobody and must not inflate the objective
+        options = ["o1", "o2", "o3", "o4"]
+        preferences = {
+            "p1": [("o1", 5)],
+            "p2": [("o1", 4)],
+        }
+        option_weight = 1.0
+        result = solve_assignment(
+            participants,
+            options,
+            preferences,
+            min_quota=2,
+            max_quota=3,
+            option_weight=option_weight,
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert result.metrics is not None
+        expected = (
+            result.metrics.preference_satisfaction
+            + option_weight * result.metrics.active_options
+        )
+        assert result.metrics.objective_value == pytest.approx(expected)
+
+    def test_objective_identity_with_zero_weight(self):
+        """With option_weight=0, objective_value equals preference satisfaction."""
+        participants = ["p1", "p2"]
+        options = ["o1", "o2", "o3"]
+        preferences = {
+            "p1": [("o1", 5)],
+            "p2": [("o1", 4)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=0.0
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert result.metrics is not None
+        assert result.metrics.objective_value == pytest.approx(
+            result.metrics.preference_satisfaction
+        )
+
+
 class TestSolverWithMockData:
     """Integration tests using the mock preferences file."""
 

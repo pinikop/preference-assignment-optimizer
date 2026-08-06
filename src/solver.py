@@ -107,9 +107,13 @@ class PreferenceAssignmentSolver:
                     f"x_{participant}_{option}", cat="Binary"
                 )
 
-        # Decision variables for option usage
+        # Decision variables for option usage.
+        # Only for options someone ranked: an unranked option has no linking
+        # constraints, so its y would be a free binary inflating the objective.
         self._y = {
-            option: LpVariable(f"y_{option}", cat="Binary") for option in self.options
+            option: LpVariable(f"y_{option}", cat="Binary")
+            for option in self.options
+            if self._option_to_participants.get(option)
         }
 
         # Objective function:
@@ -120,7 +124,7 @@ class PreferenceAssignmentSolver:
             for participant in self.participants
             for option, score in self.preferences.get(participant, [])
         )
-        option_utilization = lpSum(self._y[option] for option in self.options)
+        option_utilization = lpSum(self._y.values())
         self._model += preference_sum + self.option_weight * option_utilization
 
     def _add_constraints(self) -> None:
