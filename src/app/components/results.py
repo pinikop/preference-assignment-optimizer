@@ -32,6 +32,8 @@ def render_results_dashboard(
 
     if result.metrics is None:
         st.warning("No solution found. Try adjusting parameters.")
+        for hint in result.infeasibility_hints:
+            st.markdown(f"- {hint}")
         return
 
     metrics = result.metrics

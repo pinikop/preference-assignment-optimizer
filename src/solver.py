@@ -281,6 +281,41 @@ class PreferenceAssignmentSolver:
             constraint_violations=constraint_violations,
         )
 
+    def _diagnose_infeasibility(self) -> list[str]:
+        """Explain likely causes of an infeasible model."""
+        hints: list[str] = []
+
+        # Participants whose every ranked option can't gather min_quota people
+        for participant in self.participants:
+            prefs = self.preferences.get(participant, [])
+            if prefs and all(
+                len(self._option_to_participants.get(option, set())) < self.min_quota
+                for option, _ in prefs
+            ):
+                hints.append(
+                    f"Participant '{participant}' cannot be assigned: none of "
+                    f"their options is ranked by at least {self.min_quota} "
+                    f"participants (min_quota)"
+                )
+
+        # Total capacity across demanded options vs participants to place
+        participants_to_place = sum(1 for p in self.participants if self.preferences.get(p))
+        total_capacity = len(self._option_to_participants) * self.max_quota
+        if participants_to_place > total_capacity:
+            hints.append(
+                f"Not enough capacity: {participants_to_place} participants to "
+                f"assign, but the {len(self._option_to_participants)} ranked "
+                f"options hold at most {total_capacity} (max_quota={self.max_quota})"
+            )
+
+        if not hints:
+            hints.append(
+                "No single cause found; preferences likely can't be partitioned "
+                f"into groups of {self.min_quota}-{self.max_quota}. Try lowering "
+                "min_quota or collecting more choices per participant."
+            )
+        return hints
+
     def solve(self) -> SolverResult:
         """
         Solve the preference assignment problem.
@@ -348,12 +383,17 @@ class PreferenceAssignmentSolver:
                 obj_float,
             )
 
+        infeasibility_hints: list[str] = []
+        if solver_status == SolverStatus.INFEASIBLE:
+            infeasibility_hints = self._diagnose_infeasibility()
+
         return SolverResult(
             status=solver_status,
             assignments=option_assignments,
             option_counts=option_counts,
             participant_assignments=participant_assignments,
             metrics=metrics,
+            infeasibility_hints=infeasibility_hints,
         )
 
 

@@ -261,6 +261,46 @@ class TestSolveAssignment:
                 assert 1 <= assignment.preference_rank <= 5
 
 
+class TestInfeasibilityDiagnostics:
+    """An INFEASIBLE result must explain what likely caused it."""
+
+    def test_impossible_participant_is_named_in_hints(self):
+        """p3's only option is ranked by nobody else, so it can never reach min_quota."""
+        participants = ["p1", "p2", "p3"]
+        options = ["o1", "o2"]
+        preferences = {
+            "p1": [("o1", 2)],
+            "p2": [("o1", 2)],
+            "p3": [("o2", 2)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=0.5
+        )
+        assert result.status == SolverStatus.INFEASIBLE
+        assert any("p3" in hint for hint in result.infeasibility_hints)
+
+    def test_capacity_shortfall_is_reported(self):
+        """4 participants competing for a single option with max_quota=3."""
+        participants = ["p1", "p2", "p3", "p4"]
+        options = ["o1"]
+        preferences = {p: [("o1", 1)] for p in participants}
+        result = solve_assignment(
+            participants, options, preferences, min_quota=1, max_quota=3, option_weight=0.5
+        )
+        assert result.status == SolverStatus.INFEASIBLE
+        assert any("capacity" in hint.lower() for hint in result.infeasibility_hints)
+
+    def test_feasible_problem_has_no_hints(self):
+        participants = ["p1", "p2"]
+        options = ["o1"]
+        preferences = {p: [("o1", 1)] for p in participants}
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=0.5
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert result.infeasibility_hints == []
+
+
 class TestOptionWeightBehavior:
     """option_weight trades satisfaction for active options; the default must
     not sit at the tipping point where first choices get sacrificed."""

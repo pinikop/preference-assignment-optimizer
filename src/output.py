@@ -10,6 +10,11 @@ def print_assignment_summary(result: SolverResult) -> None:
     """Pretty-print assignment results."""
     print(f"\n=== Solver Status: {result.status.value} ===\n")
 
+    if result.infeasibility_hints:
+        print("No assignment satisfies the constraints. Likely causes:")
+        for hint in result.infeasibility_hints:
+            print(f"  - {hint}")
+
     if result.metrics:
         m = result.metrics
         print(f"Preference Satisfaction: {m.preference_satisfaction}")

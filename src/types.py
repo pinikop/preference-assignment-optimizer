@@ -53,5 +53,6 @@ class SolverResult:
     option_counts: dict[str, int]
     participant_assignments: dict[str, ParticipantAssignment]
     metrics: Metrics | None = None
+    infeasibility_hints: list[str] = field(default_factory=list)
 
 
