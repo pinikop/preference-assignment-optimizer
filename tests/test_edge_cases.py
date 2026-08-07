@@ -159,7 +159,7 @@ class TestNonLadderScores:
 class TestLoaderRobustness:
     def _load(self, tmp_path: Path, content: str, name: str = "t.csv"):
         p = tmp_path / name
-        p.write_text(content)
+        p.write_text(content, encoding="utf-8")
         return load_preferences_from_csv(p)
 
     def test_unicode_names(self, tmp_path):
