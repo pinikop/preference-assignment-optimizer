@@ -1,6 +1,7 @@
 """Output formatting and export for solver results."""
 
 import csv
+from io import StringIO
 from pathlib import Path
 
 from src.types import SolverResult
@@ -38,21 +39,28 @@ def print_assignment_summary(result: SolverResult) -> None:
             print(f"{option}: {', '.join(participants)}")
 
 
+def results_to_csv_string(result: SolverResult) -> str:
+    """Render participant assignments as CSV text."""
+    buffer = StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(
+        ["participant_id", "assigned_option", "preference_rank", "preference_score", "status"]
+    )
+    for participant, assignment in sorted(result.participant_assignments.items()):
+        writer.writerow([
+            participant,
+            assignment.option,
+            assignment.preference_rank if assignment.preference_rank is not None else "",
+            assignment.preference_score,
+            assignment.status.value,
+        ])
+    return buffer.getvalue()
+
+
 def export_results_to_csv(result: SolverResult, filepath: Path | str) -> None:
     """Export participant assignments to CSV."""
     try:
         with open(filepath, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(
-                ["participant_id", "assigned_option", "preference_rank", "preference_score", "status"]
-            )
-            for participant, assignment in sorted(result.participant_assignments.items()):
-                writer.writerow([
-                    participant,
-                    assignment.option,
-                    assignment.preference_rank or "",
-                    assignment.preference_score,
-                    assignment.status.value,
-                ])
+            f.write(results_to_csv_string(result))
     except OSError as e:
         raise OSError(f"Failed to write results to '{filepath}': {e}") from e

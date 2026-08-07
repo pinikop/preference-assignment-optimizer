@@ -5,6 +5,8 @@ from collections import Counter
 import pandas as pd
 import streamlit as st
 
+from src.output import results_to_csv_string
+
 
 @st.cache_data
 def calculate_option_popularity(
@@ -78,15 +80,4 @@ def calculate_competition_index(
 @st.cache_data
 def get_results_csv(result) -> str:
     """Generate CSV content from results."""
-    from io import StringIO
-
-    output = StringIO()
-    output.write(
-        "participant_id,assigned_option,preference_rank,preference_score,status\n"
-    )
-    for participant, assignment in sorted(result.participant_assignments.items()):
-        output.write(
-            f"{participant},{assignment.option},{assignment.preference_rank or ''},"
-            f"{assignment.preference_score},{assignment.status.value}\n"
-        )
-    return output.getvalue()
+    return results_to_csv_string(result)

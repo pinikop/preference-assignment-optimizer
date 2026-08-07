@@ -209,6 +209,45 @@ class TestOutput:
             assert rows[0]["preference_score"] == "5"
             assert rows[0]["status"] == "ASSIGNED"
 
+    @pytest.fixture
+    def result_with_commas(self):
+        """Result whose participant and option names contain commas."""
+        return SolverResult(
+            status=SolverStatus.OPTIMAL,
+            assignments={"Option A, advanced": ["Smith, John"]},
+            option_counts={"Option A, advanced": 1},
+            participant_assignments={
+                "Smith, John": ParticipantAssignment(
+                    option="Option A, advanced",
+                    status=AssignmentStatus.ASSIGNED,
+                    preference_rank=1,
+                    preference_score=5,
+                ),
+            },
+            metrics=None,
+        )
+
+    def test_results_to_csv_string_quotes_commas(self, result_with_commas):
+        """Names containing commas must survive a CSV round-trip."""
+        from io import StringIO
+
+        from src.output import results_to_csv_string
+
+        content = results_to_csv_string(result_with_commas)
+        rows = list(csv.DictReader(StringIO(content)))
+        assert len(rows) == 1
+        assert rows[0]["participant_id"] == "Smith, John"
+        assert rows[0]["assigned_option"] == "Option A, advanced"
+
+    def test_app_csv_matches_output_module(self, result_with_commas):
+        """The Streamlit download must share the CLI's CSV implementation."""
+        from src.app.utils.analytics import get_results_csv
+        from src.output import results_to_csv_string
+
+        assert get_results_csv(result_with_commas) == results_to_csv_string(
+            result_with_commas
+        )
+
     def test_export_to_invalid_path_raises_error(self):
         """Exporting to invalid path should raise OSError."""
         result = SolverResult(
