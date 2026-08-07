@@ -161,3 +161,27 @@ class TestBruteForceAgreement:
         else:
             assert result.status == SolverStatus.OPTIMAL
             assert result.metrics.objective_value == pytest.approx(best)
+
+
+@pytest.mark.slow
+class TestLargeInstanceInvariants:
+    """Invariants scale to realistic sizes; optimality checks don't."""
+
+    @given(instance=instances(max_participants=30, max_options=10))
+    @settings(
+        max_examples=25,
+        deadline=None,
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    def test_invariants_hold_at_scale(self, instance):
+        participants, options, preferences, min_q, max_q, weight = instance
+        result = solve_assignment(
+            participants,
+            options,
+            preferences,
+            min_quota=min_q,
+            max_quota=max_q,
+            option_weight=weight,
+        )
+        if result.status == SolverStatus.OPTIMAL:
+            assert_solver_invariants(result, participants, preferences, min_q, max_q, weight)
