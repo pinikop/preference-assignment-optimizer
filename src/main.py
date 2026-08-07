@@ -2,7 +2,7 @@
 
 import random
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
@@ -42,7 +42,7 @@ def main(
         ),
     ] = False,
     seed: Annotated[
-        Optional[int],
+        int | None,
         typer.Option(
             "-s",
             "--seed",
@@ -50,7 +50,7 @@ def main(
         ),
     ] = None,
     output: Annotated[
-        Optional[Path], typer.Option("-o", "--output", help="Export results to CSV")
+        Path | None, typer.Option("-o", "--output", help="Export results to CSV")
     ] = None,
 ) -> None:
     """Run the preference assignment optimizer."""
@@ -67,12 +67,11 @@ def main(
 
     participants, options, preferences = load_preferences_from_csv(csv_file)
 
-    # Shuffle participant order if requested (affects tie-breaking)
+    # Shuffle participant order if requested (affects tie-breaking).
+    # A private Random instance leaves the module-level RNG untouched.
     if seed is not None or shuffle:
-        if seed is not None:
-            random.seed(seed)
         participants = participants.copy()  # Avoid modifying original list in-place
-        random.shuffle(participants)
+        random.Random(seed).shuffle(participants)
 
     result = solve_assignment(
         participants,
