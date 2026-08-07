@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 
-from pulp import LpMaximize, LpProblem, LpVariable, lpSum, value
+from pulp import PULP_CBC_CMD, LpMaximize, LpProblem, LpVariable, lpSum, value
 from pulp.constants import (
     LpStatusInfeasible,
     LpStatusNotSolved,
@@ -303,7 +303,7 @@ class PreferenceAssignmentSolver:
         if self._model is None:
             raise RuntimeError("Model was not built")
 
-        status_code = self._model.solve()
+        status_code = self._model.solve(PULP_CBC_CMD(msg=False))
 
         # Map PuLP status codes to SolverStatus
         status_map = {

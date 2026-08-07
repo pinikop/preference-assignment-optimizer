@@ -261,6 +261,24 @@ class TestSolveAssignment:
                 assert 1 <= assignment.preference_rank <= 5
 
 
+class TestSolverOutput:
+    """The solver must not spew CBC internals to stdout/stderr."""
+
+    def test_solve_produces_no_solver_output(self, capfd):
+        participants = ["p1", "p2"]
+        options = ["o1"]
+        preferences = {
+            "p1": [("o1", 5)],
+            "p2": [("o1", 4)],
+        }
+        solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=0.5
+        )
+        captured = capfd.readouterr()
+        assert captured.out == ""
+        assert captured.err == ""
+
+
 class TestObjectiveValue:
     """Tests that objective_value matches the documented objective formula."""
 
