@@ -133,3 +133,31 @@ class TestSolverInvariants:
         else:
             assert result.status == SolverStatus.INFEASIBLE
             assert result.infeasibility_hints
+
+
+@pytest.mark.slow
+class TestBruteForceAgreement:
+    """The killer property: the ILP must agree with exhaustive enumeration."""
+
+    @given(instance=instances(max_participants=6, max_options=4))
+    @settings(
+        max_examples=50,
+        deadline=None,
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    def test_optimality_and_feasibility(self, instance):
+        participants, options, preferences, min_q, max_q, weight = instance
+        result = solve_assignment(
+            participants,
+            options,
+            preferences,
+            min_quota=min_q,
+            max_quota=max_q,
+            option_weight=weight,
+        )
+        best, _ = brute_force_optimum(participants, options, preferences, min_q, max_q, weight)
+        if best is None:
+            assert result.status == SolverStatus.INFEASIBLE
+        else:
+            assert result.status == SolverStatus.OPTIMAL
+            assert result.metrics.objective_value == pytest.approx(best)
