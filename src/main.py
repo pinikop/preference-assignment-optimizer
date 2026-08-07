@@ -35,7 +35,7 @@ def main(
     option_weight: Annotated[
         float,
         typer.Option("-w", "--option-weight", help="Weight for option utilization"),
-    ] = 1.0,
+    ] = 0.5,
     shuffle: Annotated[
         bool,
         typer.Option(

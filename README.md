@@ -66,7 +66,7 @@ uv run preference-optimizer --help
 |--------|-------|-------------|---------|
 | `--min-quota` | `-m` | Minimum participants per active option | 2 |
 | `--max-quota` | `-q` | Maximum participants per option | 3 |
-| `--option-weight` | `-w` | Weight for option utilization | 1.0 |
+| `--option-weight` | `-w` | Weight for option utilization | 0.5 |
 | `--shuffle` | | Shuffle participant order (affects tie-breaking) | False |
 | `--seed` | `-s` | Random seed (implies --shuffle) | None |
 | `--output` | `-o` | Export results to CSV file | None |
@@ -159,6 +159,11 @@ Controls the trade-off between participant satisfaction and option utilization:
 | 0 | Only optimize for participant preferences |
 | 0.1–0.5 | Mild preference for using more options |
 | 1.0+ | Strongly favor activating more options |
+
+Note: preference scores run 1..N where N is the number of choice columns, so
+the same weight is relatively stronger for CSVs with fewer choices. At exactly
+1.0 the solver is indifferent between a first choice and an extra active
+option, which makes results order-sensitive.
 
 ## License
 

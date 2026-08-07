@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.solver import solve_assignment
+from src.solver import PreferenceAssignmentSolver, solve_assignment
 from src.types import (
     AssignmentStatus,
     Metrics,
@@ -259,6 +259,52 @@ class TestSolveAssignment:
             if assignment.status == AssignmentStatus.ASSIGNED:
                 assert assignment.preference_rank is not None
                 assert 1 <= assignment.preference_rank <= 5
+
+
+class TestOptionWeightBehavior:
+    """option_weight trades satisfaction for active options; the default must
+    not sit at the tipping point where first choices get sacrificed."""
+
+    def test_default_option_weight_is_half(self):
+        solver = PreferenceAssignmentSolver(
+            ["p1"], ["o1"], {"p1": [("o1", 1)]}, min_quota=1
+        )
+        assert solver.option_weight == 0.5
+
+    def test_default_weight_keeps_unanimous_first_choices(self):
+        """When everyone ranks o1 first, the default weight must not split
+        the group just to activate a second option."""
+        participants = ["p1", "p2", "p3"]
+        options = ["o1", "o2"]
+        preferences = {p: [("o1", 2), ("o2", 1)] for p in participants}
+        solver = PreferenceAssignmentSolver(
+            participants, options, preferences, min_quota=1, max_quota=3
+        )
+        result = solver.solve()
+        assert result.status == SolverStatus.OPTIMAL
+        ranks = [a.preference_rank for a in result.participant_assignments.values()]
+        assert ranks == [1, 1, 1]
+
+    def test_zero_weight_maximizes_satisfaction_only(self):
+        participants = ["p1", "p2", "p3"]
+        options = ["o1", "o2"]
+        preferences = {p: [("o1", 2), ("o2", 1)] for p in participants}
+        result = solve_assignment(
+            participants, options, preferences, min_quota=1, max_quota=3, option_weight=0.0
+        )
+        assert result.metrics is not None
+        assert result.metrics.preference_satisfaction == 6
+
+    def test_high_weight_activates_more_options(self):
+        """A weight far above the score scale should force a split."""
+        participants = ["p1", "p2", "p3", "p4"]
+        options = ["o1", "o2"]
+        preferences = {p: [("o1", 2), ("o2", 1)] for p in participants}
+        result = solve_assignment(
+            participants, options, preferences, min_quota=1, max_quota=4, option_weight=10.0
+        )
+        assert result.metrics is not None
+        assert result.metrics.active_options == 2
 
 
 class TestSolverOutput:

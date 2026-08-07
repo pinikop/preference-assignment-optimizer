@@ -50,7 +50,7 @@ class PreferenceAssignmentSolver:
         preferences: dict[str, list[tuple[str, int]]],
         min_quota: int = 2,
         max_quota: int = 3,
-        option_weight: float = 1.0,
+        option_weight: float = 0.5,
     ):
         """
         Initialize the solver with problem data.
@@ -62,7 +62,10 @@ class PreferenceAssignmentSolver:
                          e.g., {'Participant1': [('OptionA', 5), ('OptionB', 4), ...]}
             min_quota: Minimum participants per active option (default: 2)
             max_quota: Maximum participants per option (default: 3)
-            option_weight: Weight for the option utilization objective (default: 1.0)
+            option_weight: Weight for the option utilization objective (default: 0.5).
+                           At 1.0 the solver is indifferent between a participant's
+                           first choice and activating an extra option, making
+                           results order-sensitive; keep it below the score step.
 
         Raises:
             ValueError: If min_quota < 1 or max_quota < min_quota
