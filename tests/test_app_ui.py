@@ -1,9 +1,18 @@
 """Streamlit AppTest coverage for the web interface (slow suite)."""
 
 import pandas as pd
+import plotly.graph_objects as go
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from src.app.utils.visualizations import (
+    create_competition_index_chart,
+    create_option_fill_pie_chart,
+    create_preference_distribution_chart,
+    create_preference_heatmap,
+    create_satisfaction_histogram,
+    create_weighted_popularity_chart,
+)
 from src.types import SolverStatus
 
 pytestmark = pytest.mark.slow
@@ -125,3 +134,50 @@ class TestNoPreferencesFlag:
         at = run_solver(at.run())
         infos = " ".join(str(i.value) for i in at.info)
         assert "p5" in infos
+
+
+class TestVisualizationBuilders:
+    def test_preference_heatmap(self):
+        fig = create_preference_heatmap(["o1", "o2"], PREFERENCES, num_choices=2)
+        assert isinstance(fig, go.Figure)
+        assert "Heatmap" in fig.layout.title.text
+
+    def test_weighted_popularity_chart(self):
+        df = pd.DataFrame({"Option": ["o1"], "Weighted Score": [5]})
+        fig = create_weighted_popularity_chart(df)
+        assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+
+    def test_competition_index_chart(self):
+        df = pd.DataFrame({"Option": ["o1"], "Top-2 Demand": [4], "Competition Index": [1.33]})
+        fig = create_competition_index_chart(df)
+        assert isinstance(fig, go.Figure)
+
+    def test_distribution_chart(self):
+        fig = create_preference_distribution_chart(
+            [{"Rank": "1", "Count": 3}, {"Rank": "2", "Count": 1}]
+        )
+        assert isinstance(fig, go.Figure)
+
+    def test_fill_pie_chart(self):
+        fig = create_option_fill_pie_chart({"Min quota": 2, "Above min": 1})
+        assert isinstance(fig, go.Figure)
+
+    def test_satisfaction_histogram(self):
+        fig = create_satisfaction_histogram([2, 2, 1, 1], num_choices=2)
+        assert isinstance(fig, go.Figure)
+
+
+class TestAppCli:
+    def test_builds_streamlit_run_argv(self, monkeypatch):
+        import sys
+
+        import streamlit.web.cli as st_cli
+
+        from src.app import cli as app_cli
+
+        captured = {}
+        monkeypatch.setattr(st_cli, "main", lambda: captured.setdefault("argv", sys.argv[:]))
+        app_cli.main()
+        assert captured["argv"][:2] == ["streamlit", "run"]
+        assert captured["argv"][2].endswith("streamlit.py")
