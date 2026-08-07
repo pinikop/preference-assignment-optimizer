@@ -102,9 +102,7 @@ def render_results_dashboard(
     # Detailed Results Section
     st.header("📋 Detailed Results")
 
-    result_tabs = st.tabs(
-        ["All Assignments", "Participant Lookup", "Option Breakdown", "Insights"]
-    )
+    result_tabs = st.tabs(["All Assignments", "Participant Lookup", "Option Breakdown", "Insights"])
 
     with result_tabs[0]:
         _render_all_assignments_tab(result)
@@ -235,9 +233,7 @@ def _render_insights_tab(
 
     # Lucky participants: got 1st choice for a high-demand option
     competition_df = calculate_competition_index(options, preferences, max_quota)
-    high_demand_options = set(
-        competition_df[competition_df["Competition Index"] >= 1.0]["Option"]
-    )
+    high_demand_options = set(competition_df[competition_df["Competition Index"] >= 1.0]["Option"])
 
     lucky = []
     for p, assignment in result.participant_assignments.items():

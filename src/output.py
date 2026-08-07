@@ -47,13 +47,15 @@ def results_to_csv_string(result: SolverResult) -> str:
         ["participant_id", "assigned_option", "preference_rank", "preference_score", "status"]
     )
     for participant, assignment in sorted(result.participant_assignments.items()):
-        writer.writerow([
-            participant,
-            assignment.option,
-            assignment.preference_rank if assignment.preference_rank is not None else "",
-            assignment.preference_score,
-            assignment.status.value,
-        ])
+        writer.writerow(
+            [
+                participant,
+                assignment.option,
+                assignment.preference_rank if assignment.preference_rank is not None else "",
+                assignment.preference_score,
+                assignment.status.value,
+            ]
+        )
     return buffer.getvalue()
 
 

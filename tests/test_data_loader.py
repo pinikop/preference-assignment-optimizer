@@ -21,14 +21,14 @@ class TestMockDataFile:
         ), "Mock data should have 45 students and 5 choices each"
 
         assert df.index.is_unique, "Student IDs should be unique"
-        assert df.index.tolist() == [
-            f"student_{i:03d}" for i in range(1, 46)
-        ], "Student IDs should be student_001 to student_045"
+        assert df.index.tolist() == [f"student_{i:03d}" for i in range(1, 46)], (
+            "Student IDs should be student_001 to student_045"
+        )
 
         assert df.columns.is_unique, "Choice columns should be unique"
-        assert df.columns.tolist() == [
-            f"choice_{i}" for i in range(1, 6)
-        ], "Columns should be choice_1 to choice_5"
+        assert df.columns.tolist() == [f"choice_{i}" for i in range(1, 6)], (
+            "Columns should be choice_1 to choice_5"
+        )
 
         assert df.notna().all().all(), "Mock data should not contain missing values"
 
@@ -102,9 +102,7 @@ student_002,Project_B,Project_A,,,
         return csv_path
 
     def test_handles_missing_choices(self, csv_with_missing: Path):
-        students, projects, preferences = load_preferences_from_csv(
-            str(csv_with_missing)
-        )
+        students, projects, preferences = load_preferences_from_csv(str(csv_with_missing))
         assert len(preferences["student_001"]) == 3
         assert len(preferences["student_002"]) == 2
 

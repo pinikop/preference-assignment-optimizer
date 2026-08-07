@@ -51,10 +51,7 @@ def render_explorer(
             if prefs:
                 st.write(f"**{selected_participant}'s ranked choices:**")
                 pref_df = pd.DataFrame(
-                    [
-                        (rank, option, score)
-                        for rank, (option, score) in enumerate(prefs, 1)
-                    ],
+                    [(rank, option, score) for rank, (option, score) in enumerate(prefs, 1)],
                     columns=["Rank", "Option", "Score"],
                 )
                 st.table(pref_df)
@@ -67,9 +64,7 @@ def render_explorer(
         col1, col2 = st.columns(2)
 
         with col1:
-            k = st.slider(
-                "Top/Bottom K options", 3, min(10, len(options)), 5, key="popularity_k"
-            )
+            k = st.slider("Top/Bottom K options", 3, min(10, len(options)), 5, key="popularity_k")
 
         popularity_df = calculate_option_popularity(options, preferences)
         weighted_df = calculate_weighted_popularity(options, preferences)
@@ -78,9 +73,7 @@ def render_explorer(
 
         with col1:
             st.write(f"**Top {k} Most Wanted** (by total selections)")
-            st.dataframe(
-                popularity_df.head(k), use_container_width=True, hide_index=True
-            )
+            st.dataframe(popularity_df.head(k), use_container_width=True, hide_index=True)
 
             st.write(f"**Bottom {k} Least Wanted**")
             bottom_k = popularity_df.tail(k).iloc[::-1]

@@ -56,9 +56,7 @@ class TestCLI:
         """Test that CSV export works."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "results.csv"
-            result = runner.invoke(
-                app, [MOCK_CSV, "-o", str(output_path)]
-            )
+            result = runner.invoke(app, [MOCK_CSV, "-o", str(output_path)])
             assert result.exit_code == 0
             assert output_path.exists()
             assert f"Results exported to: {output_path}" in result.output
@@ -246,9 +244,7 @@ class TestOutput:
         from src.app.utils.analytics import get_results_csv
         from src.output import results_to_csv_string
 
-        assert get_results_csv(result_with_commas) == results_to_csv_string(
-            result_with_commas
-        )
+        assert get_results_csv(result_with_commas) == results_to_csv_string(result_with_commas)
 
     def test_count_choice_columns_ignores_column_names(self):
         """The loader accepts any column names, so the app must too."""

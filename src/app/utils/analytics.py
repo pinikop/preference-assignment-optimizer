@@ -77,10 +77,7 @@ def calculate_competition_index(
             demand[option] = 0
 
     df = pd.DataFrame(
-        [
-            (option, count, round(count / capacity, 2))
-            for option, count in demand.items()
-        ],
+        [(option, count, round(count / capacity, 2)) for option, count in demand.items()],
         columns=["Option", "Top-2 Demand", "Competition Index"],
     )
     return df.sort_values("Competition Index", ascending=False).reset_index(drop=True)

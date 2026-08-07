@@ -70,9 +70,7 @@ def load_preferences_from_csv(
         seen: set[str] = set()
         for option, _ in prefs:
             if option in seen:
-                raise ValueError(
-                    f"Duplicate option '{option}' for participant '{row.Index}'"
-                )
+                raise ValueError(f"Duplicate option '{option}' for participant '{row.Index}'")
             seen.add(option)
 
         preferences[row.Index] = prefs

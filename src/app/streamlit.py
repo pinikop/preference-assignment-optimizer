@@ -14,9 +14,7 @@ from src.data_loader import load_preferences_from_csv
 
 
 def main():
-    st.set_page_config(
-        page_title="Preference Assignment Optimizer", page_icon="📊", layout="wide"
-    )
+    st.set_page_config(page_title="Preference Assignment Optimizer", page_icon="📊", layout="wide")
 
     st.title("📊 Preference Assignment Optimizer")
     st.markdown("Optimally assign participants to options based on ranked preferences.")

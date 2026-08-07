@@ -10,9 +10,7 @@ from src.data_loader import load_preferences_from_csv
 from src.output import export_results_to_csv, print_assignment_summary
 from src.solver import solve_assignment
 
-app = typer.Typer(
-    help="Optimize participant-to-option assignments based on preferences"
-)
+app = typer.Typer(help="Optimize participant-to-option assignments based on preferences")
 
 
 @app.command()
@@ -20,14 +18,13 @@ def main(
     csv_file: Annotated[
         Path,
         typer.Argument(
-            help="Path to preferences CSV file (column 1: participants, column 2+: options by priority)"
+            help="Path to preferences CSV file "
+            "(column 1: participants, column 2+: options by priority)"
         ),
     ],
     min_quota: Annotated[
         int,
-        typer.Option(
-            "-m", "--min-quota", help="Minimum participants per active option"
-        ),
+        typer.Option("-m", "--min-quota", help="Minimum participants per active option"),
     ] = 2,
     max_quota: Annotated[
         int, typer.Option("-q", "--max-quota", help="Maximum participants per option")
@@ -40,7 +37,8 @@ def main(
         bool,
         typer.Option(
             "--shuffle",
-            help="Shuffle participant order (affects tie-breaking); if --seed is not set, not reproducible",
+            help="Shuffle participant order (affects tie-breaking); "
+            "if --seed is not set, not reproducible",
         ),
     ] = False,
     seed: Annotated[

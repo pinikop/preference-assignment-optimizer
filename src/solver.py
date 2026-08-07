@@ -106,9 +106,7 @@ class PreferenceAssignmentSolver:
         self._x = {}
         for participant in self.participants:
             for option, _ in self.preferences.get(participant, []):
-                self._x[participant, option] = LpVariable(
-                    f"x_{participant}_{option}", cat="Binary"
-                )
+                self._x[participant, option] = LpVariable(f"x_{participant}_{option}", cat="Binary")
 
         # Decision variables for option usage.
         # Only for options someone ranked: an unranked option has no linking
@@ -140,14 +138,12 @@ class PreferenceAssignmentSolver:
             participant_prefs = self.preferences.get(participant, [])
             if participant_prefs:
                 constraint = (
-                    lpSum(
-                        self._x[participant, option] for option, _ in participant_prefs
-                    )
-                    == 1
+                    lpSum(self._x[participant, option] for option, _ in participant_prefs) == 1
                 )
                 self._model += constraint  # type: ignore[assignment]
 
-        # Big-M formulation: if y[option]=0 (inactive), count=0; if y[option]=1, count in [min_quota, max_quota]
+        # Big-M formulation: if y[option]=0 (inactive), count=0;
+        # if y[option]=1, count in [min_quota, max_quota]
         for option in self.options:
             participants_with_option = self._option_to_participants.get(option, set())
 
@@ -171,9 +167,7 @@ class PreferenceAssignmentSolver:
         Returns:
             Tuple of (option_assignments, participant_assignments)
         """
-        option_assignments: dict[str, list[str]] = {
-            option: [] for option in self.options
-        }
+        option_assignments: dict[str, list[str]] = {option: [] for option in self.options}
         participant_assignments: dict[str, ParticipantAssignment] = {}
 
         for participant in self.participants:
@@ -191,9 +185,7 @@ class PreferenceAssignmentSolver:
             assigned = False
             for option, score in participant_prefs:
                 var_value = (
-                    value(self._x[participant, option])
-                    if (participant, option) in self._x
-                    else 0.0
+                    value(self._x[participant, option]) if (participant, option) in self._x else 0.0
                 )
                 # value() returns either float or None
                 if (
@@ -232,14 +224,11 @@ class PreferenceAssignmentSolver:
         """Calculate metrics from the solved assignments."""
         # Calculate preference satisfaction
         preference_satisfaction = sum(
-            assignment.preference_score
-            for assignment in participant_assignments.values()
+            assignment.preference_score for assignment in participant_assignments.values()
         )
 
         # Count active options
-        option_counts = {
-            option: len(assigned) for option, assigned in option_assignments.items()
-        }
+        option_counts = {option: len(assigned) for option, assigned in option_assignments.items()}
         active_options = sum(1 for count in option_counts.values() if count > 0)
 
         # Calculate preference distribution (dynamic, supports any number of choices)
@@ -254,9 +243,7 @@ class PreferenceAssignmentSolver:
                 preference_distribution[assignment.preference_rank] += 1
 
         # Find unused options
-        unused_options = [
-            option for option, count in option_counts.items() if count == 0
-        ]
+        unused_options = [option for option, count in option_counts.items() if count == 0]
 
         # Check for constraint violations
         constraint_violations = []
@@ -271,9 +258,7 @@ class PreferenceAssignmentSolver:
             preference_satisfaction=preference_satisfaction,
             active_options=active_options,
             average_satisfaction=(
-                preference_satisfaction / len(self.participants)
-                if self.participants
-                else 0.0
+                preference_satisfaction / len(self.participants) if self.participants else 0.0
             ),
             objective_value=objective_value,
             preference_distribution=preference_distribution,
@@ -353,9 +338,7 @@ class PreferenceAssignmentSolver:
         solver_status = status_map.get(status_code, SolverStatus.NOT_SOLVED)
 
         # Initialize result structure
-        option_assignments: dict[str, list[str]] = {
-            option: [] for option in self.options
-        }
+        option_assignments: dict[str, list[str]] = {option: [] for option in self.options}
         participant_assignments: dict[str, ParticipantAssignment] = {}
         option_counts: dict[str, int] = {option: 0 for option in self.options}
         metrics: Metrics | None = None
@@ -373,8 +356,7 @@ class PreferenceAssignmentSolver:
             objective_value = value(self._model.objective)
             obj_float = (
                 float(objective_value)
-                if objective_value is not None
-                and isinstance(objective_value, (int, float))
+                if objective_value is not None and isinstance(objective_value, (int, float))
                 else 0.0
             )
             metrics = self._calculate_metrics(

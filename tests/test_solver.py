@@ -203,17 +203,23 @@ class TestSolveAssignment:
 
     def test_returns_solver_result(self, simple_problem):
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         assert isinstance(result, SolverResult)
 
     def test_optimal_status(self, simple_problem):
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         assert result.status == SolverStatus.OPTIMAL
 
     def test_all_participants_assigned(self, simple_problem):
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         for participant in participants:
             assert participant in result.participant_assignments
             assert result.participant_assignments[participant].status == AssignmentStatus.ASSIGNED
@@ -221,19 +227,25 @@ class TestSolveAssignment:
     def test_option_size_constraint(self, simple_problem):
         """Each option should have 0, 2, or 3 participants."""
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         for option, count in result.option_counts.items():
             assert count in [0, 2, 3], f"Option {option} has {count} participants"
 
     def test_no_constraint_violations(self, simple_problem):
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         assert result.metrics is not None
         assert result.metrics.constraint_violations == []
 
     def test_metrics_calculated(self, simple_problem):
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         assert result.metrics is not None
         assert result.metrics.preference_satisfaction > 0
         assert result.metrics.active_options > 0
@@ -249,12 +261,16 @@ class TestSolveAssignment:
             "p4": [("o2", 5), ("o1", 4)],
             # p5 has no preferences
         }
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         assert result.participant_assignments["p5"].status == AssignmentStatus.NO_PREFERENCES
 
     def test_preference_rank_tracking(self, simple_problem):
         participants, options, preferences = simple_problem
-        result = solve_assignment(participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0)
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=1.0
+        )
         for participant, assignment in result.participant_assignments.items():
             if assignment.status == AssignmentStatus.ASSIGNED:
                 assert assignment.preference_rank is not None
@@ -349,9 +365,7 @@ class TestOptionWeightBehavior:
     not sit at the tipping point where first choices get sacrificed."""
 
     def test_default_option_weight_is_half(self):
-        solver = PreferenceAssignmentSolver(
-            ["p1"], ["o1"], {"p1": [("o1", 1)]}, min_quota=1
-        )
+        solver = PreferenceAssignmentSolver(["p1"], ["o1"], {"p1": [("o1", 1)]}, min_quota=1)
         assert solver.option_weight == 0.5
 
     def test_default_weight_keeps_unanimous_first_choices(self):
@@ -433,8 +447,7 @@ class TestObjectiveValue:
         assert result.status == SolverStatus.OPTIMAL
         assert result.metrics is not None
         expected = (
-            result.metrics.preference_satisfaction
-            + option_weight * result.metrics.active_options
+            result.metrics.preference_satisfaction + option_weight * result.metrics.active_options
         )
         assert result.metrics.objective_value == pytest.approx(expected)
 
@@ -533,7 +546,9 @@ class TestEdgeCases:
             participants=[],
             options=["o1", "o2"],
             preferences={},
-            min_quota=2, max_quota=3, option_weight=1.0
+            min_quota=2,
+            max_quota=3,
+            option_weight=1.0,
         )
         assert result.status == SolverStatus.OPTIMAL
         assert all(count == 0 for count in result.option_counts.values())
@@ -570,9 +585,7 @@ class TestMetricsValidation:
         assert result.metrics is not None
 
         # Calculate expected sum from individual assignments
-        expected_sum = sum(
-            a.preference_score for a in result.participant_assignments.values()
-        )
+        expected_sum = sum(a.preference_score for a in result.participant_assignments.values())
         assert result.metrics.preference_satisfaction == expected_sum
 
     def test_active_options_count_matches_assignments(self):

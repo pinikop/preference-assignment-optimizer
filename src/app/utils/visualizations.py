@@ -61,9 +61,7 @@ def create_competition_index_chart(competition_df: pd.DataFrame) -> go.Figure:
         color="Competition Index",
         color_continuous_scale="RdYlGn_r",
     )
-    fig.add_hline(
-        y=1.0, line_dash="dash", line_color="red", annotation_text="Capacity threshold"
-    )
+    fig.add_hline(y=1.0, line_dash="dash", line_color="red", annotation_text="Capacity threshold")
     return fig
 
 
@@ -85,9 +83,7 @@ def create_preference_distribution_chart(dist_data: list[dict]) -> go.Figure:
 @st.cache_data
 def create_option_fill_pie_chart(fill_counts: dict[str, int]) -> go.Figure:
     """Create a pie chart showing option fill rates."""
-    fill_df = pd.DataFrame(
-        [{"Fill Level": k, "Count": v} for k, v in fill_counts.items() if v > 0]
-    )
+    fill_df = pd.DataFrame([{"Fill Level": k, "Count": v} for k, v in fill_counts.items() if v > 0])
     fig = px.pie(
         fill_df,
         values="Count",
