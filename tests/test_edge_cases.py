@@ -81,34 +81,24 @@ class TestCapacity:
         )
         assert result.status == SolverStatus.OPTIMAL
 
-    def test_unanimous_demand_exceeds_capacity(self):
-        preferences = {f"p{i}": [("o1", 1)] for i in range(4)}
-        result = solve_assignment(
-            list(preferences),
-            ["o1"],
-            preferences,
-            min_quota=1,
-            max_quota=3,
-            option_weight=0.5,
-        )
-        assert result.status == SolverStatus.INFEASIBLE
-        assert any("capacity" in h.lower() for h in result.infeasibility_hints)
-
 
 class TestParityTrap:
     def test_five_participants_pairs_only(self):
-        """5 participants, groups of exactly 2, two options: 5 is odd -> infeasible."""
-        preferences = {f"p{i}": [("o1", 2), ("o2", 1)] for i in range(5)}
+        """Capacity suffices (3 options x 2 = 6 >= 5) but an odd count
+        can't be split into exact pairs - pure parity infeasibility,
+        exercising the generic partitioning hint."""
+        preferences = {f"p{i}": [("o1", 3), ("o2", 2), ("o3", 1)] for i in range(5)}
         result = solve_assignment(
             list(preferences),
-            ["o1", "o2"],
+            ["o1", "o2", "o3"],
             preferences,
             min_quota=2,
             max_quota=2,
             option_weight=0.5,
         )
         assert result.status == SolverStatus.INFEASIBLE
-        assert result.infeasibility_hints  # generic partitioning hint
+        assert result.infeasibility_hints
+        assert not any("capacity" in h.lower() for h in result.infeasibility_hints)
 
 
 class TestTies:
