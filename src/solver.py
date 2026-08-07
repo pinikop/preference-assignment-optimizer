@@ -68,12 +68,18 @@ class PreferenceAssignmentSolver:
                            results order-sensitive; keep it below the score step.
 
         Raises:
-            ValueError: If min_quota < 1 or max_quota < min_quota
+            ValueError: If min_quota < 1, max_quota < min_quota, a preference
+                list contains the same option twice, or preferences reference
+                an option missing from the options list
         """
         if min_quota < 1:
             raise ValueError("min_quota must be at least 1")
         if max_quota < min_quota:
             raise ValueError("max_quota must be >= min_quota")
+        for participant, prefs in preferences.items():
+            ranked_options = [option for option, _ in prefs]
+            if len(ranked_options) != len(set(ranked_options)):
+                raise ValueError(f"Duplicate option in preferences for participant '{participant}'")
 
         self.participants = participants
         self.options = options
@@ -84,6 +90,11 @@ class PreferenceAssignmentSolver:
 
         # Pre-compute option -> participants mapping
         self._option_to_participants = self._build_option_index()
+
+        # An option outside the options list would get no quota constraint
+        unknown_options = set(self._option_to_participants) - set(options)
+        if unknown_options:
+            raise ValueError(f"Preferences reference unknown options: {sorted(unknown_options)}")
 
         # Model state (set during solve)
         self._model: LpProblem | None = None
@@ -102,17 +113,23 @@ class PreferenceAssignmentSolver:
         """Build the ILP model with decision variables and objective function."""
         self._model = LpProblem("Preference-Assignment", LpMaximize)
 
+        # Index-based variable names: raw IDs can collide after PuLP
+        # sanitization ('p 1' and 'p_1' both become 'p_1'), crashing CBC
+        option_index = {option: j for j, option in enumerate(self.options)}
+
         # Decision variables for participant-option assignments
         self._x = {}
-        for participant in self.participants:
+        for i, participant in enumerate(self.participants):
             for option, _ in self.preferences.get(participant, []):
-                self._x[participant, option] = LpVariable(f"x_{participant}_{option}", cat="Binary")
+                self._x[participant, option] = LpVariable(
+                    f"x_{i}_{option_index[option]}", cat="Binary"
+                )
 
         # Decision variables for option usage.
         # Only for options someone ranked: an unranked option has no linking
         # constraints, so its y would be a free binary inflating the objective.
         self._y = {
-            option: LpVariable(f"y_{option}", cat="Binary")
+            option: LpVariable(f"y_{option_index[option]}", cat="Binary")
             for option in self.options
             if self._option_to_participants.get(option)
         }

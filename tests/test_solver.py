@@ -277,6 +277,53 @@ class TestSolveAssignment:
                 assert 1 <= assignment.preference_rank <= 5
 
 
+class TestNameSanitization:
+    """IDs that sanitize to the same PuLP variable name must not collide."""
+
+    def test_ids_differing_only_in_special_chars(self):
+        """'p 1' and 'p_1' both sanitize to 'p_1' in PuLP; raw-ID variable
+        names crash CBC with a PulpSolverError."""
+        participants = ["p 1", "p_1"]
+        options = ["o1"]
+        preferences = {
+            "p 1": [("o1", 1)],
+            "p_1": [("o1", 1)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=2, option_weight=0.5
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert result.option_counts["o1"] == 2
+        for participant in participants:
+            status = result.participant_assignments[participant].status
+            assert status == AssignmentStatus.ASSIGNED
+
+
+class TestDuplicatePreferenceValidation:
+    """The solver API must reject duplicate options in a preference list
+    (the CSV loader validates, but programmatic callers bypass it)."""
+
+    def test_duplicate_option_in_preferences_raises(self):
+        with pytest.raises(ValueError, match="Duplicate option"):
+            PreferenceAssignmentSolver(
+                ["p1"],
+                ["o1"],
+                {"p1": [("o1", 2), ("o1", 1)]},
+                min_quota=1,
+            )
+
+    def test_preference_for_unknown_option_raises(self):
+        """An option missing from the options list would get no quota
+        constraint at all, silently bypassing the core constraint."""
+        with pytest.raises(ValueError, match="unknown option"):
+            PreferenceAssignmentSolver(
+                ["p1"],
+                ["o1"],
+                {"p1": [("o2", 1)]},
+                min_quota=1,
+            )
+
+
 class TestMetricsImmutability:
     """Reading metrics must never mutate them."""
 
