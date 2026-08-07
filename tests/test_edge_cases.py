@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+from src.data_loader import load_preferences_from_csv
 from src.solver import solve_assignment
 from src.types import AssignmentStatus, SolverStatus
 
@@ -153,3 +154,56 @@ class TestNonLadderScores:
         assert m.objective_value == pytest.approx(
             m.preference_satisfaction + 0.25 * m.active_options
         )
+
+
+class TestLoaderRobustness:
+    def _load(self, tmp_path: Path, content: str, name: str = "t.csv"):
+        p = tmp_path / name
+        p.write_text(content)
+        return load_preferences_from_csv(p)
+
+    def test_unicode_names(self, tmp_path):
+        _, options, prefs = self._load(
+            tmp_path, "id,c1,c2\nJosé,Option-É,Übung\nÜser,Übung,Option-É\n"
+        )
+        assert set(options) == {"Option-É", "Übung"}
+        assert prefs["José"][0] == ("Option-É", 2)
+
+    def test_quoted_commas_in_names(self, tmp_path):
+        _, options, prefs = self._load(
+            tmp_path, 'id,c1\n"Smith, John","Opt, A"\n"Doe, Jane","Opt, A"\n'
+        )
+        assert options == ["Opt, A"]
+        assert prefs["Smith, John"] == [("Opt, A", 1)]
+
+    def test_whitespace_is_preserved(self, tmp_path):
+        """Loader does not strip; ' A' and 'A' are distinct options."""
+        _, options, _ = self._load(tmp_path, "id,c1\np1, A\np2,A\n")
+        assert set(options) == {" A", "A"}
+
+    def test_numeric_participant_ids(self, tmp_path):
+        participants, _, prefs = self._load(tmp_path, "id,c1\n1,A\n2,B\n")
+        assert participants == [1, 2]  # pandas keeps them as ints
+        assert prefs[1] == [("A", 1)]
+
+    def test_single_column_csv_raises(self, tmp_path):
+        """IDs only, zero choice columns -> no data rows."""
+        with pytest.raises(ValueError):
+            self._load(tmp_path, "id\np1\np2\n")
+
+    def test_all_nan_row_yields_empty_preferences(self, tmp_path):
+        _, _, prefs = self._load(tmp_path, "id,c1,c2\np1,A,B\np2,,\n")
+        assert prefs["p2"] == []
+
+    def test_gap_in_middle_keeps_column_rank(self, tmp_path):
+        """Score comes from column position, not from compacting."""
+        _, _, prefs = self._load(tmp_path, "id,c1,c2,c3\np1,A,,C\n")
+        assert prefs["p1"] == [("A", 3), ("C", 1)]
+
+    def test_crlf_and_trailing_newlines(self, tmp_path):
+        participants, _, _ = self._load(tmp_path, "id,c1\r\np1,A\r\np2,B\r\n\r\n")
+        assert participants == ["p1", "p2"]
+
+    def test_ragged_row_raises_parse_error(self, tmp_path):
+        with pytest.raises(ValueError, match="Failed to parse"):
+            self._load(tmp_path, "id,c1\np1,A\np2,B,EXTRA,MORE\n")
