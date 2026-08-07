@@ -33,7 +33,11 @@ class ParticipantAssignment:
 
 @dataclass
 class Metrics:
-    """Metrics for solver results."""
+    """Metrics for solver results.
+
+    average_satisfaction divides by all participants, including those with
+    no preferences, so it understates satisfaction among assigned ones.
+    """
 
     preference_satisfaction: int
     active_options: int
