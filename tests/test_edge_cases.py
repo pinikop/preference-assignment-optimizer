@@ -1,11 +1,14 @@
 """Deterministic adversarial edge cases across all modules (fast suite)."""
 
+import csv
 from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
 from src.data_loader import load_preferences_from_csv
+from src.main import app
+from src.output import export_results_to_csv, print_assignment_summary
 from src.solver import solve_assignment
 from src.types import AssignmentStatus, SolverStatus
 
@@ -208,3 +211,35 @@ class TestLoaderRobustness:
     def test_ragged_row_raises_parse_error(self, tmp_path):
         with pytest.raises(ValueError, match="Failed to parse"):
             self._load(tmp_path, "id,c1\np1,A\np2,B,EXTRA,MORE\n")
+
+
+class TestInfeasibleOutput:
+    def test_summary_prints_hints(self, capsys):
+        preferences = {"p1": [("o1", 1)]}
+        result = solve_assignment(
+            ["p1"], ["o1"], preferences, min_quota=2, max_quota=3, option_weight=0.5
+        )
+        print_assignment_summary(result)
+        out = capsys.readouterr().out
+        assert "Likely causes" in out
+        assert "p1" in out
+
+
+class TestCLIValidation:
+    def test_min_quota_greater_than_max_quota_errors(self):
+        result = runner.invoke(app, [MOCK_CSV, "-m", "5", "-q", "2"])
+        assert result.exit_code == 1
+        assert "cannot be greater" in result.output
+
+
+class TestExportDegenerate:
+    def test_export_when_everyone_has_no_preferences(self, tmp_path):
+        result = solve_assignment(
+            ["p1", "p2"], ["o1"], {}, min_quota=1, max_quota=3, option_weight=0.5
+        )
+        out_path = tmp_path / "results.csv"
+        export_results_to_csv(result, out_path)
+        rows = list(csv.DictReader(out_path.open()))
+        assert len(rows) == 2
+        assert all(r["status"] == "NO_PREFERENCES" for r in rows)
+        assert all(r["assigned_option"] == "" for r in rows)
