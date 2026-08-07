@@ -24,7 +24,11 @@ def print_assignment_summary(result: SolverResult) -> None:
         print(f"Objective Value: {m.objective_value:.2f}")
 
         print("\nPreference Distribution:")
-        for rank, count in sorted(m.preference_distribution.items(), key=lambda x: str(x[0])):
+        # Numeric ranks first (best to worst), string buckets last
+        for rank, count in sorted(
+            m.preference_distribution.items(),
+            key=lambda item: (isinstance(item[0], str), item[0]),
+        ):
             if count > 0:
                 print(f"  {rank}: {count}")
 

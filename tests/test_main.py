@@ -171,6 +171,38 @@ class TestOutput:
         assert "Constraint Violations" in captured.out
         assert "OptionA has 1 participant" in captured.out
 
+    def test_distribution_prints_ranks_numerically(self, capsys):
+        """With 10+ ranks, order must be 1, 2, ... 10 (not lexicographic
+        1, 10, 2) and string buckets must come last."""
+        result = SolverResult(
+            status=SolverStatus.OPTIMAL,
+            assignments={"OptionA": ["P1"]},
+            option_counts={"OptionA": 1},
+            participant_assignments={
+                "P1": ParticipantAssignment(
+                    option="OptionA",
+                    status=AssignmentStatus.ASSIGNED,
+                    preference_rank=1,
+                    preference_score=10,
+                ),
+            },
+            metrics=Metrics(
+                preference_satisfaction=10,
+                active_options=1,
+                average_satisfaction=10.0,
+                objective_value=10.5,
+                preference_distribution={1: 1, 2: 3, 10: 2, "no_preferences": 1},
+                unused_options=[],
+            ),
+        )
+
+        print_assignment_summary(result)
+        captured = capsys.readouterr()
+
+        lines = [line.strip() for line in captured.out.splitlines()]
+        dist_lines = [line for line in lines if line.startswith(("1", "2", "no_preferences"))]
+        assert dist_lines == ["1: 1", "2: 3", "10: 2", "no_preferences: 1"]
+
     def test_summary_names_participants_without_preferences(self, capsys):
         """Participants who submitted no preferences are skipped by the
         solver, so the summary must call them out by name."""
