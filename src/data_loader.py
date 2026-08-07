@@ -50,6 +50,8 @@ def load_preferences_from_csv(
     if df.empty:
         raise ValueError(f"CSV file contains no data rows: {filepath}")
 
+    df.index = df.index.astype(str)
+
     if not df.index.is_unique:
         duplicates = df.index[df.index.duplicated()].unique().tolist()
         raise ValueError(f"Duplicate participant IDs: {duplicates}")

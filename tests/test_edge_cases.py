@@ -182,9 +182,10 @@ class TestLoaderRobustness:
         assert set(options) == {" A", "A"}
 
     def test_numeric_participant_ids(self, tmp_path):
+        """Numeric IDs are coerced to strings, honoring the loader's contract."""
         participants, _, prefs = self._load(tmp_path, "id,c1\n1,A\n2,B\n")
-        assert participants == [1, 2]  # pandas keeps them as ints
-        assert prefs[1] == [("A", 1)]
+        assert participants == ["1", "2"]
+        assert prefs["1"] == [("A", 1)]
 
     def test_single_column_csv_raises(self, tmp_path):
         """IDs only, zero choice columns -> no data rows."""
