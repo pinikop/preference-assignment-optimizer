@@ -4,6 +4,8 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from src.types import SolverStatus
+
 pytestmark = pytest.mark.slow
 
 APP_PATH = "src/app/streamlit.py"
@@ -70,3 +72,56 @@ class TestSolverControls:
         at = checkbox.check().run()
         seed_input = [n for n in at.number_input if n.label == "Random Seed"][0]
         assert not seed_input.disabled
+
+
+def run_solver(at: AppTest) -> AppTest:
+    button = [b for b in at.button if "Run Solver" in b.label][0]
+    return button.click().run()
+
+
+class TestSolveFlow:
+    def test_run_stores_result_and_quotas(self):
+        at = run_solver(loaded_app().run())
+        assert not at.exception
+        result = at.session_state["result"]
+        assert result.status == SolverStatus.OPTIMAL
+        assert at.session_state["min_quota"] == 2
+        assert at.session_state["max_quota"] == 3
+
+    def test_dashboard_shows_metrics(self):
+        at = run_solver(loaded_app().run())
+        metric_labels = [m.label for m in at.metric]
+        assert "Preference Satisfaction" in metric_labels
+        assert "Active Options" in metric_labels
+
+    def test_success_badge_for_optimal(self):
+        at = run_solver(loaded_app().run())
+        assert any("Optimal" in str(s.value) for s in at.success)
+
+
+class TestInfeasibleFlow:
+    def test_hints_rendered(self):
+        # p1's only option can never reach min_quota=2
+        prefs = {"p1": [("o1", 1)]}
+        raw = pd.DataFrame({"participant_id": ["p1"], "choice_1": ["o1"]})
+        at = run_solver(loaded_app(preferences=prefs, raw_df=raw).run())
+        assert any("Infeasible" in str(e.value) for e in at.error)
+        markdown_text = " ".join(str(m.value) for m in at.markdown)
+        assert "p1" in markdown_text  # hint names the impossible participant
+
+
+class TestNoPreferencesFlag:
+    def test_participant_without_prefs_is_named(self):
+        prefs = dict(PREFERENCES)  # p5 in participants but has no preferences
+        raw = pd.DataFrame(
+            {
+                "participant_id": ["p1", "p2", "p3", "p4", "p5"],
+                "choice_1": ["o1", "o1", "o2", "o2", None],
+                "choice_2": ["o2", "o2", "o1", "o1", None],
+            }
+        )
+        at = loaded_app(preferences=prefs, raw_df=raw)
+        at.session_state["participants"] = ["p1", "p2", "p3", "p4", "p5"]
+        at = run_solver(at.run())
+        infos = " ".join(str(i.value) for i in at.info)
+        assert "p5" in infos
