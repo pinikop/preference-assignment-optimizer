@@ -28,27 +28,31 @@ def render_solver_controls(
             "Option Weight",
             0.0,
             2.0,
-            1.0,
+            0.5,
             0.1,
             help="Weight for option utilization. Higher = favor more active options.",
         )
 
     with col4:
+        shuffle = st.checkbox(
+            "Shuffle participants",
+            help="Shuffle participant order (affects tie-breaking).",
+        )
         seed = st.number_input(
             "Random Seed",
             min_value=0,
             max_value=9999,
-            value=0,
-            help="Set to 0 for no shuffling, or a positive number for reproducible shuffling.",
+            value=42,
+            disabled=not shuffle,
+            help="Seed for reproducible shuffling.",
         )
 
     if st.button("🚀 Run Solver", type="primary"):
         with st.spinner("Solving assignment problem..."):
             # Optionally shuffle participants
             solve_participants = participants.copy()
-            if seed > 0:
-                random.seed(seed)
-                random.shuffle(solve_participants)
+            if shuffle:
+                random.Random(seed).shuffle(solve_participants)
 
             result = solve_assignment(
                 participants=solve_participants,
