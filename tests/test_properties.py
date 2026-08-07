@@ -3,7 +3,7 @@
 import string
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from src.solver import solve_assignment
@@ -183,5 +183,5 @@ class TestLargeInstanceInvariants:
             max_quota=max_q,
             option_weight=weight,
         )
-        if result.status == SolverStatus.OPTIMAL:
-            assert_solver_invariants(result, participants, preferences, min_q, max_q, weight)
+        assume(result.status == SolverStatus.OPTIMAL)
+        assert_solver_invariants(result, participants, preferences, min_q, max_q, weight)
