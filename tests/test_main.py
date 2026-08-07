@@ -13,32 +13,34 @@ from src.types import AssignmentStatus, Metrics, ParticipantAssignment, SolverRe
 
 runner = CliRunner()
 
+MOCK_CSV = str(Path(__file__).parent.parent / "data" / "mock_preferences.csv")
+
 
 class TestCLI:
     """Tests for the CLI commands."""
 
     def test_cli_runs_with_mock_data(self):
         """Test that CLI runs successfully with mock data."""
-        result = runner.invoke(app, ["data/mock_preferences.csv"])
+        result = runner.invoke(app, [MOCK_CSV])
         assert result.exit_code == 0
         assert "Solver Status: Optimal" in result.output
 
     def test_cli_with_option_weight(self):
         """Test CLI with option weight parameter."""
-        result = runner.invoke(app, ["data/mock_preferences.csv", "-w", "0.5"])
+        result = runner.invoke(app, [MOCK_CSV, "-w", "0.5"])
         assert result.exit_code == 0
         assert "Solver Status: Optimal" in result.output
 
     def test_cli_with_quotas(self):
         """Test CLI with custom quota parameters."""
-        result = runner.invoke(app, ["data/mock_preferences.csv", "-m", "1", "-q", "5"])
+        result = runner.invoke(app, [MOCK_CSV, "-m", "1", "-q", "5"])
         assert result.exit_code == 0
         assert "Solver Status: Optimal" in result.output
 
     def test_cli_with_seed(self):
         """Test CLI with seed parameter for reproducibility."""
-        result1 = runner.invoke(app, ["data/mock_preferences.csv", "-s", "42"])
-        result2 = runner.invoke(app, ["data/mock_preferences.csv", "-s", "42"])
+        result1 = runner.invoke(app, [MOCK_CSV, "-s", "42"])
+        result2 = runner.invoke(app, [MOCK_CSV, "-s", "42"])
         assert result1.exit_code == 0
         assert result2.exit_code == 0
         # With same seed, output should be identical
@@ -46,7 +48,7 @@ class TestCLI:
 
     def test_cli_with_shuffle(self):
         """Test CLI with shuffle flag."""
-        result = runner.invoke(app, ["data/mock_preferences.csv", "--shuffle"])
+        result = runner.invoke(app, [MOCK_CSV, "--shuffle"])
         assert result.exit_code == 0
         assert "Solver Status: Optimal" in result.output
 
@@ -55,7 +57,7 @@ class TestCLI:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "results.csv"
             result = runner.invoke(
-                app, ["data/mock_preferences.csv", "-o", str(output_path)]
+                app, [MOCK_CSV, "-o", str(output_path)]
             )
             assert result.exit_code == 0
             assert output_path.exists()

@@ -261,6 +261,49 @@ class TestSolveAssignment:
                 assert 1 <= assignment.preference_rank <= 5
 
 
+class TestKnownOptimum:
+    """Pin the solver to hand-computed optima where greedy assignment fails."""
+
+    def test_beats_greedy_first_choice_assignment(self):
+        """Greedy would give p1 its first choice o1, leaving p2 (who only
+        ranked o1) unassignable. The optimum sacrifices p1's first choice:
+        p1 -> o2, p2 -> o1, total satisfaction 1 + 2 = 3."""
+        participants = ["p1", "p2"]
+        options = ["o1", "o2"]
+        preferences = {
+            "p1": [("o1", 2), ("o2", 1)],
+            "p2": [("o1", 2)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=1, max_quota=1, option_weight=0.0
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert result.participant_assignments["p1"].option == "o2"
+        assert result.participant_assignments["p2"].option == "o1"
+        assert result.metrics is not None
+        assert result.metrics.preference_satisfaction == 3
+
+    def test_forced_pairing_reaches_hand_computed_optimum(self):
+        """p2 only ranked o1 and p4 only ranked o2, forcing the pairing;
+        the optimum is exactly 2 + 2 + 2 + 1 = 7."""
+        participants = ["p1", "p2", "p3", "p4"]
+        options = ["o1", "o2"]
+        preferences = {
+            "p1": [("o1", 2), ("o2", 1)],
+            "p2": [("o1", 2)],
+            "p3": [("o1", 2), ("o2", 1)],
+            "p4": [("o2", 2)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=2, option_weight=0.0
+        )
+        assert result.status == SolverStatus.OPTIMAL
+        assert result.participant_assignments["p2"].option == "o1"
+        assert result.participant_assignments["p4"].option == "o2"
+        assert result.metrics is not None
+        assert result.metrics.preference_satisfaction == 7
+
+
 class TestInfeasibilityDiagnostics:
     """An INFEASIBLE result must explain what likely caused it."""
 
