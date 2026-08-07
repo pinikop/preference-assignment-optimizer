@@ -9,6 +9,7 @@ import streamlit as st
 from src.app.components.explorer import render_explorer
 from src.app.components.results import render_results_dashboard
 from src.app.components.solver_controls import render_solver_controls
+from src.app.utils.analytics import count_choice_columns
 from src.data_loader import load_preferences_from_csv
 
 
@@ -54,7 +55,7 @@ def main():
             st.session_state.raw_df = raw_df
 
             # Determine number of choices
-            num_choices = len([c for c in raw_df.columns if c.startswith("choice")])
+            num_choices = count_choice_columns(raw_df)
             st.session_state.num_choices = num_choices
 
             st.success(

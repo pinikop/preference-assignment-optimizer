@@ -248,6 +248,22 @@ class TestOutput:
             result_with_commas
         )
 
+    def test_count_choice_columns_ignores_column_names(self):
+        """The loader accepts any column names, so the app must too."""
+        import pandas as pd
+
+        from src.app.utils.analytics import count_choice_columns
+
+        raw_df = pd.DataFrame(
+            {
+                "student_id": ["s1"],
+                "pref_1": ["A"],
+                "pref_2": ["B"],
+                "pref_3": ["C"],
+            }
+        )
+        assert count_choice_columns(raw_df) == 3
+
     def test_export_to_invalid_path_raises_error(self):
         """Exporting to invalid path should raise OSError."""
         result = SolverResult(

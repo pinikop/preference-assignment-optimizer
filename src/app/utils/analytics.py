@@ -8,6 +8,15 @@ import streamlit as st
 from src.output import results_to_csv_string
 
 
+def count_choice_columns(raw_df: pd.DataFrame) -> int:
+    """Number of choice columns: everything after the participant ID column.
+
+    Column names are arbitrary (matching the loader's contract), so this must
+    not depend on a 'choice_' prefix.
+    """
+    return len(raw_df.columns) - 1
+
+
 @st.cache_data
 def calculate_option_popularity(
     options: list[str], preferences: dict[str, list[tuple[str, int]]]
