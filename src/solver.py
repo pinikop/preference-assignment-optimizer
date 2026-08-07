@@ -261,7 +261,7 @@ class PreferenceAssignmentSolver:
                 preference_satisfaction / len(self.participants) if self.participants else 0.0
             ),
             objective_value=objective_value,
-            preference_distribution=preference_distribution,
+            preference_distribution=dict(preference_distribution),
             unused_options=unused_options,
             constraint_violations=constraint_violations,
         )

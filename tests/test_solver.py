@@ -277,6 +277,24 @@ class TestSolveAssignment:
                 assert 1 <= assignment.preference_rank <= 5
 
 
+class TestMetricsImmutability:
+    """Reading metrics must never mutate them."""
+
+    def test_preference_distribution_is_a_plain_dict(self):
+        """A defaultdict would silently insert keys on read access."""
+        participants = ["p1", "p2"]
+        options = ["o1"]
+        preferences = {p: [("o1", 1)] for p in participants}
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=0.5
+        )
+        assert result.metrics is not None
+        dist = result.metrics.preference_distribution
+        with pytest.raises(KeyError):
+            dist[999]
+        assert 999 not in dist
+
+
 class TestKnownOptimum:
     """Pin the solver to hand-computed optima where greedy assignment fails."""
 
