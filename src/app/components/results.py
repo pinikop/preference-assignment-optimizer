@@ -9,7 +9,7 @@ from src.app.utils.visualizations import (
     create_preference_distribution_chart,
     create_satisfaction_histogram,
 )
-from src.types import SolverStatus
+from src.types import AssignmentStatus, SolverStatus
 
 
 def render_results_dashboard(
@@ -67,6 +67,15 @@ def render_results_dashboard(
         st.warning("⚠️ Constraint Violations:")
         for v in metrics.constraint_violations:
             st.write(f"- {v}")
+
+    # Participants who submitted no preferences are never assigned
+    no_prefs = sorted(
+        participant
+        for participant, assignment in result.participant_assignments.items()
+        if assignment.status == AssignmentStatus.NO_PREFERENCES
+    )
+    if no_prefs:
+        st.info(f"ℹ️ Participants with no preferences (not assigned): {', '.join(no_prefs)}")
 
     # Preference distribution chart
     st.subheader("Preference Distribution")

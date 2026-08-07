@@ -4,7 +4,7 @@ import csv
 from io import StringIO
 from pathlib import Path
 
-from src.types import SolverResult
+from src.types import AssignmentStatus, SolverResult
 
 
 def print_assignment_summary(result: SolverResult) -> None:
@@ -37,6 +37,14 @@ def print_assignment_summary(result: SolverResult) -> None:
     for option, participants in sorted(result.assignments.items()):
         if participants:
             print(f"{option}: {', '.join(participants)}")
+
+    no_prefs = sorted(
+        participant
+        for participant, assignment in result.participant_assignments.items()
+        if assignment.status == AssignmentStatus.NO_PREFERENCES
+    )
+    if no_prefs:
+        print(f"\n⚠️  Participants with no preferences (not assigned): {', '.join(no_prefs)}")
 
 
 def results_to_csv_string(result: SolverResult) -> str:

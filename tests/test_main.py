@@ -171,6 +171,40 @@ class TestOutput:
         assert "Constraint Violations" in captured.out
         assert "OptionA has 1 participant" in captured.out
 
+    def test_summary_names_participants_without_preferences(self, capsys):
+        """Participants who submitted no preferences are skipped by the
+        solver, so the summary must call them out by name."""
+        result = SolverResult(
+            status=SolverStatus.OPTIMAL,
+            assignments={"OptionA": ["P1", "P2"]},
+            option_counts={"OptionA": 2},
+            participant_assignments={
+                "P1": ParticipantAssignment(
+                    option="OptionA",
+                    status=AssignmentStatus.ASSIGNED,
+                    preference_rank=1,
+                    preference_score=5,
+                ),
+                "P2": ParticipantAssignment(
+                    option="OptionA",
+                    status=AssignmentStatus.ASSIGNED,
+                    preference_rank=2,
+                    preference_score=4,
+                ),
+                "P3": ParticipantAssignment(
+                    option="",
+                    status=AssignmentStatus.NO_PREFERENCES,
+                ),
+            },
+            metrics=None,
+        )
+
+        print_assignment_summary(result)
+        captured = capsys.readouterr()
+
+        assert "no preferences" in captured.out.lower()
+        assert "P3" in captured.out
+
     def test_export_results_to_csv(self):
         """Test CSV export functionality."""
         result = SolverResult(
