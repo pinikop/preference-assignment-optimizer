@@ -118,6 +118,16 @@ print(result.assignments)               # {'Project_A': ['Alice'], 'Project_B': 
 print(result.metrics.active_options)    # 2
 ```
 
+## Testing
+
+```bash
+# Run fast tests (default)
+uv run pytest
+
+# Run everything, including property-based and UI tests
+uv run pytest --runslow
+```
+
 ## How the Solver Works
 
 The optimizer uses **Binary Integer Programming (BIP)** via PuLP to find optimal assignments.

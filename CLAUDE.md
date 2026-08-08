@@ -20,8 +20,11 @@ uv run preference-optimizer data/mock_preferences.csv --option-weight 0.5
 # Run with output to CSV
 uv run preference-optimizer data/mock_preferences.csv -w 0.5 -o results.csv
 
-# Run tests
+# Run fast tests (default)
 uv run pytest
+
+# Run everything, including property-based and UI tests
+uv run pytest --runslow
 ```
 
 ### CLI Options
