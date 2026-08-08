@@ -1,5 +1,8 @@
 """Streamlit AppTest coverage for the web interface (slow suite)."""
 
+import base64
+
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import pytest
@@ -136,6 +139,18 @@ class TestNoPreferencesFlag:
         assert "p5" in infos
 
 
+def decode_plotly_values(values) -> list:
+    """Decode plotly's binary-encoded arrays ({'dtype', 'bdata'}).
+
+    st.cache_data pickle round-trips figures once a Streamlit runtime exists
+    (created by earlier AppTest runs), which binary-encodes numeric arrays.
+    """
+    if isinstance(values, dict) and "bdata" in values:
+        raw = base64.b64decode(values["bdata"])
+        return np.frombuffer(raw, dtype=np.dtype(values["dtype"])).tolist()
+    return list(values)
+
+
 class TestVisualizationBuilders:
     def test_preference_heatmap(self):
         fig = create_preference_heatmap(["o1", "o2"], PREFERENCES, num_choices=2)
@@ -152,20 +167,27 @@ class TestVisualizationBuilders:
         df = pd.DataFrame({"Option": ["o1"], "Top-2 Demand": [4], "Competition Index": [1.33]})
         fig = create_competition_index_chart(df)
         assert isinstance(fig, go.Figure)
+        # capacity threshold hline lands in layout shapes
+        assert any(s.type == "line" for s in fig.layout.shapes)
 
     def test_distribution_chart(self):
         fig = create_preference_distribution_chart(
             [{"Rank": "1", "Count": 3}, {"Rank": "2", "Count": 1}]
         )
         assert isinstance(fig, go.Figure)
+        assert decode_plotly_values(fig.data[0].x) == ["1", "2"]
+        assert decode_plotly_values(fig.data[0].y) == [3, 1]
 
     def test_fill_pie_chart(self):
-        fig = create_option_fill_pie_chart({"Min quota": 2, "Above min": 1})
+        # zero-count entries are filtered out
+        fig = create_option_fill_pie_chart({"Min quota": 2, "Above min": 0})
         assert isinstance(fig, go.Figure)
+        assert decode_plotly_values(fig.data[0].values) == [2]
 
     def test_satisfaction_histogram(self):
         fig = create_satisfaction_histogram([2, 2, 1, 1], num_choices=2)
         assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
 
 
 class TestAppCli:
@@ -179,5 +201,11 @@ class TestAppCli:
         captured = {}
         monkeypatch.setattr(st_cli, "main", lambda: captured.setdefault("argv", sys.argv[:]))
         app_cli.main()
-        assert captured["argv"][:2] == ["streamlit", "run"]
+        assert captured["argv"] == [
+            "streamlit",
+            "run",
+            captured["argv"][2],
+            "--server.headless",
+            "true",
+        ]
         assert captured["argv"][2].endswith("streamlit.py")
