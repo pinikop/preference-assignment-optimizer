@@ -11,6 +11,8 @@ from pulp.constants import (
 )
 
 from src.types import (
+    DEFAULT_MAX_QUOTA,
+    DEFAULT_MIN_QUOTA,
     AssignmentStatus,
     Metrics,
     ParticipantAssignment,
@@ -48,8 +50,8 @@ class PreferenceAssignmentSolver:
         participants: list[str],
         options: list[str],
         preferences: dict[str, list[tuple[str, int]]],
-        min_quota: int = 2,
-        max_quota: int = 3,
+        min_quota: int = DEFAULT_MIN_QUOTA,
+        max_quota: int = DEFAULT_MAX_QUOTA,
         option_weight: float = 0.5,
     ):
         """

@@ -299,6 +299,16 @@ class TestNameSanitization:
             assert status == AssignmentStatus.ASSIGNED
 
 
+class TestDefaultQuotas:
+    def test_solver_defaults_come_from_shared_constants(self):
+        """Quota defaults live in src.types so solver, CLI, and app agree."""
+        from src.types import DEFAULT_MAX_QUOTA, DEFAULT_MIN_QUOTA
+
+        solver = PreferenceAssignmentSolver(["p1"], ["o1"], {"p1": [("o1", 1)]})
+        assert solver.min_quota == DEFAULT_MIN_QUOTA == 2
+        assert solver.max_quota == DEFAULT_MAX_QUOTA == 3
+
+
 class TestDuplicatePreferenceValidation:
     """The solver API must reject duplicate options in a preference list
     (the CSV loader validates, but programmatic callers bypass it)."""

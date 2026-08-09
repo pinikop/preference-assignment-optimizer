@@ -5,6 +5,7 @@ import random
 import streamlit as st
 
 from src.solver import solve_assignment
+from src.types import DEFAULT_MAX_QUOTA, DEFAULT_MIN_QUOTA
 
 
 def render_solver_controls(
@@ -18,10 +19,14 @@ def render_solver_controls(
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        min_quota = st.slider("Min Quota", 1, 5, 2, help="Minimum participants per active option")
+        min_quota = st.slider(
+            "Min Quota", 1, 5, DEFAULT_MIN_QUOTA, help="Minimum participants per active option"
+        )
 
     with col2:
-        max_quota = st.slider("Max Quota", min_quota, 10, 3, help="Maximum participants per option")
+        max_quota = st.slider(
+            "Max Quota", min_quota, 10, DEFAULT_MAX_QUOTA, help="Maximum participants per option"
+        )
 
     with col3:
         option_weight = st.slider(

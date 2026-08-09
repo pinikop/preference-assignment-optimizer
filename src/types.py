@@ -3,6 +3,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
 
+# Default quota constraints, shared by the solver, CLI, and web app
+DEFAULT_MIN_QUOTA = 2
+DEFAULT_MAX_QUOTA = 3
+
 
 class SolverStatus(Enum):
     """Status of the solver result."""

@@ -9,6 +9,7 @@ import typer
 from src.data_loader import load_preferences_from_csv
 from src.output import export_results_to_csv, print_assignment_summary
 from src.solver import solve_assignment
+from src.types import DEFAULT_MAX_QUOTA, DEFAULT_MIN_QUOTA
 
 app = typer.Typer(help="Optimize participant-to-option assignments based on preferences")
 
@@ -25,10 +26,10 @@ def main(
     min_quota: Annotated[
         int,
         typer.Option("-m", "--min-quota", help="Minimum participants per active option"),
-    ] = 2,
+    ] = DEFAULT_MIN_QUOTA,
     max_quota: Annotated[
         int, typer.Option("-q", "--max-quota", help="Maximum participants per option")
-    ] = 3,
+    ] = DEFAULT_MAX_QUOTA,
     option_weight: Annotated[
         float,
         typer.Option("-w", "--option-weight", help="Weight for option utilization"),

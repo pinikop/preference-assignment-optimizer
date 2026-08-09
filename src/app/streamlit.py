@@ -11,6 +11,7 @@ from src.app.components.results import render_results_dashboard
 from src.app.components.solver_controls import render_solver_controls
 from src.app.utils.analytics import count_choice_columns
 from src.data_loader import load_preferences_from_csv
+from src.types import DEFAULT_MAX_QUOTA, DEFAULT_MIN_QUOTA
 
 
 def main():
@@ -87,8 +88,8 @@ def main():
     # --- Results Dashboard ---
     if st.session_state.result is not None:
         result = st.session_state.result
-        min_quota = st.session_state.get("min_quota", 2)
-        max_quota = st.session_state.get("max_quota", 3)
+        min_quota = st.session_state.get("min_quota", DEFAULT_MIN_QUOTA)
+        max_quota = st.session_state.get("max_quota", DEFAULT_MAX_QUOTA)
         render_results_dashboard(
             result,
             participants,
