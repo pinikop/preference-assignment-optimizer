@@ -109,7 +109,7 @@ result = solver.solve()
 # Option 2: Function-based (backward-compatible)
 result = solve_assignment(
     participants, options, preferences,
-    min_quota=2, max_quota=3, option_weight=1.0
+    min_quota=2, max_quota=3, option_weight=0.5
 )
 
 # Access results

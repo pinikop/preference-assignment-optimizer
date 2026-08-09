@@ -88,6 +88,7 @@ class SolverResult:
     option_counts: dict[str, int]
     participant_assignments: dict[str, ParticipantAssignment]
     metrics: Metrics | None
+    infeasibility_hints: list[str]  # populated when status is INFEASIBLE
 ```
 
 ## Key Data Structures
