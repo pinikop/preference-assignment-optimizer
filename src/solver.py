@@ -96,6 +96,13 @@ class PreferenceAssignmentSolver:
         if unknown_options:
             raise ValueError(f"Preferences reference unknown options: {sorted(unknown_options)}")
 
+        # A preferences key outside participants would KeyError during model build
+        unknown_participants = set(preferences) - set(participants)
+        if unknown_participants:
+            raise ValueError(
+                f"Preferences reference unknown participants: {sorted(unknown_participants)}"
+            )
+
         # Model state (set during solve)
         self._model: LpProblem | None = None
         self._x: dict[tuple[str, str], LpVariable] = {}
@@ -288,17 +295,22 @@ class PreferenceAssignmentSolver:
         hints: list[str] = []
 
         # Participants whose every ranked option can't gather min_quota people
+        doomed = []
         for participant in self.participants:
             prefs = self.preferences.get(participant, [])
             if prefs and all(
                 len(self._option_to_participants.get(option, set())) < self.min_quota
                 for option, _ in prefs
             ):
-                hints.append(
-                    f"Participant '{participant}' cannot be assigned: none of "
-                    f"their options is ranked by at least {self.min_quota} "
-                    f"participants (min_quota)"
-                )
+                doomed.append(participant)
+        if doomed:
+            names = ", ".join(f"'{p}'" for p in doomed)
+            plural = "s" if len(doomed) > 1 else ""
+            hints.append(
+                f"Participant{plural} {names} cannot be assigned: none of "
+                f"their options is ranked by at least {self.min_quota} "
+                f"participants (min_quota)"
+            )
 
         # Total capacity across demanded options vs participants to place
         participants_to_place = sum(1 for p in self.participants if self.preferences.get(p))

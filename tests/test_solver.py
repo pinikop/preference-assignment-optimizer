@@ -303,6 +303,17 @@ class TestDuplicatePreferenceValidation:
     """The solver API must reject duplicate options in a preference list
     (the CSV loader validates, but programmatic callers bypass it)."""
 
+    def test_preference_for_unknown_participant_raises(self):
+        """A preferences key absent from the participants list must raise a
+        clear error, not a KeyError during constraint building."""
+        with pytest.raises(ValueError, match="unknown participants"):
+            PreferenceAssignmentSolver(
+                ["p1"],
+                ["o1"],
+                {"p1": [("o1", 1)], "ghost": [("o1", 1)]},
+                min_quota=1,
+            )
+
     def test_duplicate_option_in_preferences_raises(self):
         with pytest.raises(ValueError, match="Duplicate option"):
             PreferenceAssignmentSolver(
@@ -413,6 +424,23 @@ class TestInfeasibilityDiagnostics:
         )
         assert result.status == SolverStatus.INFEASIBLE
         assert any("capacity" in hint.lower() for hint in result.infeasibility_hints)
+
+    def test_doomed_participants_are_aggregated_into_one_hint(self):
+        """Multiple impossible participants share a single hint naming all
+        of them, instead of one near-identical line each."""
+        participants = ["p1", "p2"]
+        options = ["o1", "o2"]
+        preferences = {
+            "p1": [("o1", 1)],
+            "p2": [("o2", 1)],
+        }
+        result = solve_assignment(
+            participants, options, preferences, min_quota=2, max_quota=3, option_weight=0.5
+        )
+        assert result.status == SolverStatus.INFEASIBLE
+        assert len(result.infeasibility_hints) == 1
+        assert "p1" in result.infeasibility_hints[0]
+        assert "p2" in result.infeasibility_hints[0]
 
     def test_feasible_problem_has_no_hints(self):
         participants = ["p1", "p2"]
