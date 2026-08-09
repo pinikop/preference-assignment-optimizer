@@ -176,6 +176,12 @@ class TestLoaderRobustness:
         assert participants == ["1", "2"]
         assert prefs["1"] == [("A", 1)]
 
+    def test_numeric_option_values_are_coerced_to_strings(self, tmp_path):
+        """Option values honor the loader's str contract, like participant IDs."""
+        _, options, prefs = self._load(tmp_path, "id,c1\np1,101\np2,102\n")
+        assert options == ["101", "102"]
+        assert prefs["p1"] == [("101", 1)]
+
     def test_single_column_csv_raises(self, tmp_path):
         """IDs only, zero choice columns -> no data rows."""
         with pytest.raises(ValueError):

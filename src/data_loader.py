@@ -57,13 +57,13 @@ def load_preferences_from_csv(
         raise ValueError(f"Duplicate participant IDs: {duplicates}")
 
     participants = df.index.tolist()
-    options = sorted({val for val in df.values.flatten() if pd.notna(val)})
+    options = sorted({str(val) for val in df.values.flatten() if pd.notna(val)})
     num_choices = len(df.columns)
 
     preferences = {}
     for row in df.itertuples():
         prefs = [
-            (option, rank_to_score(rank, num_choices))
+            (str(option), rank_to_score(rank, num_choices))
             for rank, option in enumerate(row[1:], start=1)
             if pd.notna(option)
         ]
