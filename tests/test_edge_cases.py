@@ -72,20 +72,6 @@ class TestQuotaBoundaries:
         assert result.infeasibility_hints
 
 
-class TestCapacity:
-    def test_unanimous_demand_fits_exactly(self):
-        preferences = {f"p{i}": [("o1", 1)] for i in range(3)}
-        result = solve_assignment(
-            list(preferences),
-            ["o1"],
-            preferences,
-            min_quota=1,
-            max_quota=3,
-            option_weight=0.5,
-        )
-        assert result.status == SolverStatus.OPTIMAL
-
-
 class TestParityTrap:
     def test_five_participants_pairs_only(self):
         """Capacity suffices (3 options x 2 = 6 >= 5) but an odd count

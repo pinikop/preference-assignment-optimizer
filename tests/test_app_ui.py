@@ -1,6 +1,7 @@
 """Streamlit AppTest coverage for the web interface (slow suite)."""
 
 import base64
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -20,7 +21,7 @@ from src.types import SolverStatus
 
 pytestmark = pytest.mark.slow
 
-APP_PATH = "src/app/streamlit.py"
+APP_PATH = str(Path(__file__).parent.parent / "src" / "app" / "streamlit.py")
 
 RAW_DF = pd.DataFrame(
     {
@@ -41,10 +42,8 @@ def loaded_app(preferences=PREFERENCES, raw_df=RAW_DF) -> AppTest:
     """AppTest seeded as if a CSV was uploaded (file_uploader is not drivable)."""
     at = AppTest.from_file(APP_PATH, default_timeout=30)
     at.session_state["data_loaded"] = True
-    at.session_state["participants"] = list(preferences) or list(raw_df.iloc[:, 0])
-    at.session_state["options"] = sorted(
-        {o for prefs in preferences.values() for o, _ in prefs}
-    ) or ["o1"]
+    at.session_state["participants"] = list(preferences)
+    at.session_state["options"] = sorted({o for prefs in preferences.values() for o, _ in prefs})
     at.session_state["preferences"] = preferences
     at.session_state["raw_df"] = raw_df
     at.session_state["num_choices"] = len(raw_df.columns) - 1
@@ -124,7 +123,7 @@ class TestInfeasibleFlow:
 
 class TestNoPreferencesFlag:
     def test_participant_without_prefs_is_named(self):
-        prefs = dict(PREFERENCES)  # p5 in participants but has no preferences
+        prefs = PREFERENCES  # p5 in participants but has no preferences
         raw = pd.DataFrame(
             {
                 "participant_id": ["p1", "p2", "p3", "p4", "p5"],
