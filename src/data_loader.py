@@ -47,6 +47,8 @@ def load_preferences_from_csv(
     except pd.errors.ParserError as e:
         raise ValueError(f"Failed to parse CSV: {e}") from e
 
+    if df.columns.empty:
+        raise ValueError(f"CSV file contains no choice columns: {filepath}")
     if df.empty:
         raise ValueError(f"CSV file contains no data rows: {filepath}")
 

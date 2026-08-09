@@ -183,8 +183,8 @@ class TestLoaderRobustness:
         assert prefs["p1"] == [("101", 1)]
 
     def test_single_column_csv_raises(self, tmp_path):
-        """IDs only, zero choice columns -> no data rows."""
-        with pytest.raises(ValueError):
+        """IDs only, zero choice columns -> dedicated error message."""
+        with pytest.raises(ValueError, match="no choice columns"):
             self._load(tmp_path, "id\np1\np2\n")
 
     def test_all_nan_row_yields_empty_preferences(self, tmp_path):
